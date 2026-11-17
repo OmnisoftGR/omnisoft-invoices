@@ -147,6 +147,30 @@ table.pivot thead th { text-align: center; }
 table.pivot thead th:first-child { text-align: left; }
 table.pivot thead tr:last-child th.n { text-align: right; }
 
+/* Βοηθός */
+.vh { position: absolute; left: -9999px; }
+.chat { display: grid; gap: 12px; }
+.chat-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.mode { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); }
+.mode.ai { background: var(--accent-soft); color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button { font-size: 13px; cursor: pointer; background: var(--accent-soft); color: var(--accent); border: 1px solid transparent; border-radius: 999px; padding: 6px 12px; }
+.chips button:hover { border-color: var(--accent); }
+.msgs { display: grid; gap: 10px; max-height: 60vh; overflow: auto; padding: 2px; }
+.msg { max-width: 92%; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.msg.user { justify-self: end; background: var(--accent); color: var(--surface); }
+.msg.bot { justify-self: start; background: var(--bg); border: 1px solid var(--line); }
+.msg.bot table { margin-top: 8px; font-size: 13px; }
+.msg.bot .open-pv { margin-top: 8px; }
+.msg .src { display: block; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+.chat-form { display: flex; gap: 8px; align-items: center; }
+.chat-form input { flex: 1; min-width: 0; }
+.mic { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; display: grid; place-items: center; flex: none; }
+.mic.on { background: var(--bad); color: var(--surface); border-color: var(--bad); animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--bad) 25%, transparent); } }
+.chat-opts { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 13px; }
+.chat-opts label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+
 /* Reports */
 .reports { display: grid; gap: 10px; }
 .report { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -184,6 +208,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
       <a href="#overview" data-view="overview">Επισκόπηση</a>
       <a href="#pivot" data-view="pivot">Ανάλυση (pivot)</a>
       <a href="#reports" data-view="reports">Αναφορές</a>
+      <a href="#assistant" data-view="assistant">Βοηθός</a>
     </nav>
   </header>
 
@@ -273,6 +298,30 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
       <h2>Αναφορές της επιχείρησης</h2>
       <p class="sub" style="margin-bottom:12px">Οι αναφορές είναι ξεχωριστές για κάθε επιχείρηση. Οι προκαθορισμένες στήνονται από την Omnisoft, τις υπόλοιπες τις αποθηκεύουν οι χρήστες σας από την Ανάλυση.</p>
       <div class="reports" id="reportList"></div>
+    </section>
+  </main>
+  <!-- Βοηθός -->
+  <main id="assistant" hidden>
+    <section class="card chat">
+      <div class="chat-head">
+        <h2 style="margin:0">Βοηθός δεδομένων</h2>
+        <span class="mode" id="chatMode">Λειτουργία demo · χωρίς AI</span>
+      </div>
+      <p class="sub">Ρωτήστε με λόγια για πωλήσεις, κέρδος, πελάτες, κατηγορίες, υπόλοιπα ή απόθεμα. Πατήστε το μικρόφωνο για να μιλήσετε.</p>
+      <div class="chips" id="chatChips"></div>
+      <div class="msgs" id="chatMsgs" aria-live="polite"></div>
+      <form class="chat-form" id="chatForm">
+        <button type="button" class="mic" id="micBtn" aria-label="Φωνητική ερώτηση" title="Φωνητική ερώτηση">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+        </button>
+        <label for="chatInput" class="vh">Ερώτηση</label>
+        <input id="chatInput" type="text" autocomplete="off" placeholder="π.χ. Ποιοι πελάτες έπεσαν φέτος σε σχέση με πέρσι;">
+        <button class="btn" type="submit">Ρώτα</button>
+      </form>
+      <div class="chat-opts">
+        <label><input type="checkbox" id="speakToggle"> Ανάγνωση απαντήσεων</label>
+        <span class="sub" id="micStatus"></span>
+      </div>
     </section>
   </main>
   <footer>omnisoft.gr · Demo με εικονικά δεδομένα</footer>
@@ -370,7 +419,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   }
 
   // ---------- Routing ----------
-  const VIEWS = ["overview", "pivot", "reports"];
+  const VIEWS = ["overview", "pivot", "reports", "assistant"];
   function showOnly(id) {
     ["loading", ...VIEWS].forEach(v => { $(v).hidden = v !== id; });
     document.querySelectorAll("nav.tabs a").forEach(a => {
@@ -384,6 +433,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     if (v === "overview") renderOverview();
     if (v === "pivot") renderPivot();
     if (v === "reports") renderReports();
+    if (v === "assistant") initChat();
   }
   window.addEventListener("hashchange", route);
 
@@ -830,6 +880,289 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
       if (!error) { S.reports = S.reports.filter(x => x.id !== d.dataset.del); renderReports(); } else d.disabled = false;
     }
   });
+
+  // ---------- Βοηθός ----------
+  const nrm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ς/g, "σ");
+  const MONTH_KEYS = ["ιανουαρ", "φεβρουαρ", "μαρτ", "απριλ", "μαι", "ιουν", "ιουλ", "αυγουστ", "σεπτεμβρ", "οκτωβρ", "νοεμβρ", "δεκεμβρ"];
+  const MONTH_NAMES = ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"];
+  const ANA = { customer: "πελάτη", customer_group: "ομάδα πελατών", region: "περιοχή", salesperson: "πωλητή", category: "κατηγορία", brand: "μάρκα", item: "είδος", year: "έτος", quarter: "τρίμηνο", month: "μήνα" };
+  let aiAvailable = null;   // null = άγνωστο, true/false μετά την πρώτη δοκιμή
+  let chatReady = false;
+  let chatHistory = [];
+
+  function initChat() {
+    if (chatReady) return;
+    chatReady = true;
+    const sugg = [
+      "Πώς πάμε φέτος σε σχέση με πέρσι;",
+      "Ποιοι πελάτες έπεσαν φέτος;",
+      "Μεικτό κέρδος ανά κατηγορία",
+      "Top 5 είδη το καλοκαίρι",
+      "Ποιοι χρωστάνε πάνω από 90 μέρες;",
+      "Ποια είδη δεν κινούνται;"
+    ];
+    $("chatChips").innerHTML = sugg.map(s => `<button type="button">${esc(s)}</button>`).join("");
+    $("chatChips").addEventListener("click", e => { const b = e.target.closest("button"); if (b) ask(b.textContent); });
+    $("chatForm").addEventListener("submit", e => { e.preventDefault(); const v = $("chatInput").value.trim(); if (v) { $("chatInput").value = ""; ask(v); } });
+    $("chatMsgs").addEventListener("click", e => {
+      const b = e.target.closest("[data-pv]"); if (!b) return;
+      const r = chatConfigs[+b.dataset.pv]; applyConfig(r.cfg, r.name);
+      if (location.hash === "#pivot") route(); else location.hash = "#pivot";
+    });
+    try { $("speakToggle").checked = localStorage.getItem("omni_speak") === "1"; } catch (e) {}
+    $("speakToggle").addEventListener("change", () => { try { localStorage.setItem("omni_speak", $("speakToggle").checked ? "1" : "0"); } catch (e) {} if (!$("speakToggle").checked) try { speechSynthesis.cancel(); } catch (e) {} });
+    initMic();
+    botSay(`Γεια σας! Ρωτήστε με για τα στοιχεία της «${esc(S.tenant.name)}». Μπορείτε να γράψετε ή να πατήσετε το μικρόφωνο.`, null, false);
+  }
+
+  // ---- Φωνή ----
+  let rec = null, listening = false;
+  function initMic() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { $("micBtn").hidden = true; $("micStatus").textContent = "Η φωνητική εισαγωγή δεν υποστηρίζεται σε αυτόν τον browser (δοκιμάστε Chrome, Edge ή Safari)."; return; }
+    rec = new SR();
+    rec.lang = "el-GR"; rec.interimResults = true; rec.continuous = false;
+    let finalText = "";
+    rec.onstart = () => { listening = true; finalText = ""; $("micBtn").classList.add("on"); $("micStatus").textContent = "Σας ακούω…"; };
+    rec.onresult = e => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript;
+      }
+      $("chatInput").value = (finalText + interim).trim();
+    };
+    rec.onerror = e => { $("micStatus").textContent = e.error === "not-allowed" ? "Δεν δόθηκε άδεια για το μικρόφωνο." : "Δεν ακούστηκε κάτι. Δοκιμάστε ξανά."; };
+    rec.onend = () => {
+      listening = false; $("micBtn").classList.remove("on");
+      if ($("micStatus").textContent === "Σας ακούω…") $("micStatus").textContent = "";
+      const q = $("chatInput").value.trim();
+      if (finalText.trim() && q) { $("chatInput").value = ""; ask(q); }
+    };
+    $("micBtn").addEventListener("click", () => {
+      try { speechSynthesis.cancel(); } catch (e) {}
+      if (listening) { rec.stop(); return; }
+      try { rec.start(); } catch (e) { $("micStatus").textContent = "Το μικρόφωνο δεν ξεκίνησε. Δοκιμάστε ξανά."; }
+    });
+  }
+  function speak(text) {
+    if (!$("speakToggle").checked || !window.speechSynthesis) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, ""));
+      u.lang = "el-GR";
+      const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith("el"));
+      if (v) u.voice = v;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // ---- Μηνύματα ----
+  const chatConfigs = [];
+  function userSay(t) { addMsg(`<div class="msg user">${esc(t)}</div>`); }
+  function botSay(html, extra, viaAi, speakText) {
+    let pvBtn = "";
+    if (extra && extra.cfg) { chatConfigs.push(extra); pvBtn = `<button type="button" class="btn ghost open-pv" data-pv="${chatConfigs.length - 1}">Άνοιγμα στην Ανάλυση</button>`; }
+    const src = viaAi === true ? '<span class="src">Απάντηση από το Claude</span>' : viaAi === false && extra ? '<span class="src">Λειτουργία demo · υπολογισμός χωρίς AI</span>' : "";
+    addMsg(`<div class="msg bot">${html}${extra && extra.table ? extra.table : ""}${pvBtn}${src}</div>`);
+    if (speakText) speak(speakText);
+  }
+  function addMsg(h) { $("chatMsgs").insertAdjacentHTML("beforeend", h); $("chatMsgs").scrollTop = $("chatMsgs").scrollHeight; }
+
+  async function ask(q) {
+    userSay(q);
+    chatHistory.push({ role: "user", content: q });
+    // 1. Δοκιμή AI (Edge Function «ask»), αν έχει ενεργοποιηθεί
+    if (aiAvailable !== false) {
+      try {
+        const { data, error } = await sb.functions.invoke("ask", { body: { question: q, history: chatHistory.slice(-10) } });
+        if (!error && data && data.answer) {
+          aiAvailable = true; setMode();
+          chatHistory.push({ role: "assistant", content: data.answer });
+          botSay(`<div>${esc(data.answer).replace(/\n/g, "<br>")}</div>`, data.pivot ? { cfg: data.pivot, name: "Από τον βοηθό" } : null, true, data.answer);
+          return;
+        }
+        aiAvailable = false; setMode();
+      } catch (e) { aiAvailable = false; setMode(); }
+    }
+    // 2. Τοπική απάντηση χωρίς AI
+    const r = localAnswer(q);
+    chatHistory.push({ role: "assistant", content: r.say });
+    botSay(r.html, r.extra, false, r.say);
+  }
+  function setMode() {
+    $("chatMode").textContent = aiAvailable ? "AI ενεργό · Claude" : "Λειτουργία demo · χωρίς AI";
+    $("chatMode").classList.toggle("ai", !!aiAvailable);
+  }
+
+  // ---- Τοπική μηχανή ερωτήσεων ----
+  function parsePeriod(t) {
+    const last = allMonths[allMonths.length - 1], cy = last.slice(0, 4), py = String(+cy - 1);
+    const yMatch = t.match(/20\d\d/);
+    let year = yMatch ? yMatch[0] : (/περσι|περυσι|προηγουμεν[α-ωa-z]* (ετοσ|χρονι)/.test(t) && !isCompare(t) ? py : cy);
+    const lastN = t.match(/τελευται[α-ωa-z]*\s+(\d+)\s+μην/);
+    if (lastN) { const i = allMonths.length - 1; return [allMonths[Math.max(0, i - +lastN[1] + 1)], last, `τελευταίους ${lastN[1]} μήνες`]; }
+    if (/τελευται[α-ωa-z]* τριμην/.test(t)) { const i = allMonths.length - 1; return [allMonths[Math.max(0, i - 2)], last, "τελευταίο τρίμηνο"]; }
+    if (/τελευται[α-ωa-z]* (12 μην|χρονο|ετοσ)/.test(t)) { const i = allMonths.length - 1; return [allMonths[Math.max(0, i - 11)], last, "τελευταίους 12 μήνες"]; }
+    if (/καλοκαιρ/.test(t)) return [year + "-06", year + "-08", "καλοκαίρι " + year];
+    const qm = t.match(/(α|β|γ|δ|πρωτο|δευτερο|τριτο|τεταρτο)[^α-ωa-z0-9]{0,2}\s*τριμην/);
+    if (qm) { const n = { α: 1, πρωτο: 1, β: 2, δευτερο: 2, γ: 3, τριτο: 3, δ: 4, τεταρτο: 4 }[qm[1]]; return [`${year}-${String(n * 3 - 2).padStart(2, "0")}`, `${year}-${String(n * 3).padStart(2, "0")}`, `${n}ο τρίμηνο ${year}`]; }
+    const mi = MONTH_KEYS.findIndex(k => new RegExp("(^|\\s)" + k).test(t));
+    if (mi >= 0) { const m = `${year}-${String(mi + 1).padStart(2, "0")}`; return [m, m, `${MONTH_NAMES[mi]} ${year}`]; }
+    if (year === cy) return [cy + "-01", last, `${cy} (έως ${MONTH_NAMES[+last.slice(5, 7) - 1]})`];
+    return [year + "-01", year + "-12", String(year)];
+  }
+  function isCompare(t) { return /σε σχεση|συγκρ|εναντι|απο περσι|με περσι|πεσαν|επεσαν|μειω|πτωσ|αυξη|ανεβ|αναπτυ|χανουμε|χασαμε|βελτιω|χειροτερ[α-ωa-z]* απο/.test(t); }
+  function clampMonth(m, up) {
+    if (allMonths.includes(m)) return m;
+    return up ? ([...allMonths].reverse().find(x => x <= m) || allMonths[0]) : (allMonths.find(x => x >= m) || allMonths[allMonths.length - 1]);
+  }
+  function shiftYear(m, d) { return (+m.slice(0, 4) + d) + m.slice(4); }
+
+  function localAnswer(q) {
+    const t = nrm(q);
+    // Ειδικές ερωτήσεις
+    if (/υπολοιπ|χρωστ|εισπρα|οφειλ|καθυστερ|ληξιπροθ|ανοιχτ[α-ωa-z]* λογαριασ/.test(t)) return answerBalances(t);
+    if (/αποθεμ|στοκ|χωρισ κινηση|δεν κινουν|ακινητ|λιμνασ/.test(t)) return answerStock(t);
+    if (/τι (να )?προσεξ|τι πρεπει|συμβουλ|προτεινεισ|προτασ/.test(t)) return answerInsights();
+
+    // Χαιρετισμός ή άσχετη ερώτηση
+    if (!/πωλησ|πουλ|τζιρ|εσοδ|κερδ|ποσοτ|παμε|πηγαιν|αγορασ|πελατ|κατηγορ|πωλητ|περιοχ|μαρκ|ειδ|προιον|top|πρωτ|καλυτερ/.test(t)) {
+      const h = "Μπορώ να απαντήσω για πωλήσεις, μεικτό κέρδος, ποσότητες, πελάτες, κατηγορίες, πωλητές, περιοχές, υπόλοιπα πελατών και απόθεμα. Για παράδειγμα: «Ποιοι πελάτες έπεσαν φέτος;» ή «Μεικτό κέρδος ανά κατηγορία το καλοκαίρι».";
+      return { html: esc(h), say: h, extra: null };
+    }
+    // Μέτρο
+    let measure = "net";
+    if (/περιθωρ|ποσοστο κερδ|κερδ[α-ωa-z]* %|κερδοφορ|μεικτο κερδοσ τοισ εκατο/.test(t)) measure = "margin_pct";
+    else if (/κερδ/.test(t)) measure = "gross";
+    else if (/ποσοτ|τεμαχ|κιλα|τεμ(?![α-ωa-z])|τονο/.test(t)) measure = "qty";
+
+    // Διαστάσεις
+    const dims = [];
+    const addDim = (d, re) => { if (re.test(t) && !dims.includes(d)) dims.push(d); };
+    addDim("customer_group", /ομαδ[α-ωa-z]* πελατ|τυπ[α-ωa-z]* πελατ|καναλ/);
+    addDim("customer", /πελατ(?!ων ομαδ)/);
+    if (dims.includes("customer_group") && !/πελατεσ|πελατη(?![α-ωa-z])|ανα πελατη/.test(t.replace(/ομαδ[α-ωa-z]* πελατ[α-ωa-z]*|τυπ[α-ωa-z]* πελατ[α-ωa-z]*/g, ""))) dims.splice(dims.indexOf("customer"), dims.indexOf("customer") >= 0 ? 1 : 0);
+    addDim("category", /κατηγορ/);
+    addDim("salesperson", /πωλητ/);
+    addDim("region", /περιοχ|νομο|πολη/);
+    addDim("brand", /μαρκ|brand/);
+    addDim("item", /ειδ(η|οσ|ων|ουσ)(?![α-ωa-z])|προιον/);
+    addDim("month", /ανα μηνα|μηνιαι|καθε μηνα/);
+    addDim("quarter", /ανα τριμην/);
+
+    // Φίλτρα από τιμές που αναφέρονται στην ερώτηση
+    const filters = {};
+    FILTER_DIMS.forEach(d => {
+      const vals = [...new Set(S.sales.map(r => r[d]))];
+      const hit = vals.filter(v => { const nv = nrm(v); return nv.length >= 3 && (t.includes(nv) || (nv.length >= 6 && !nv.includes(" ") && t.includes(nv.slice(0, -2)))); });
+      if (hit.length) filters[d] = hit;
+    });
+    Object.keys(filters).forEach(d => { const i = dims.indexOf(d); if (i >= 0 && filters[d].length === 1) dims.splice(i, 1); });
+
+    // Περίοδος / σύγκριση / ταξινόμηση
+    let [from, to, plabel] = parsePeriod(t);
+    from = clampMonth(from, false); to = clampMonth(to, true);
+    const compare = isCompare(t);
+    const down = /πεσ|μειω|πτωσ|χαν|χειροτερ|λιγοτερ|μικροτερ|χαμηλοτερ/.test(t);
+    const topM = t.match(/(?:top|πρωτ[α-ωa-z]*|καλυτερ[α-ωa-z]*|μεγαλυτερ[α-ωa-z]*|κορυφαι[α-ωa-z]*)\s*(\d+)/) || t.match(/(\d+)\s*(?:καλυτερ|μεγαλυτερ|κορυφαι|πρωτ)/);
+    const topN = topM ? Math.min(50, +topM[1]) : 10;
+
+    const fe = Object.entries(filters).map(([k, v]) => [k, new Set(v)]);
+    const pick = (f, tt) => S.sales.filter(r => r.month >= f && r.month <= tt && fe.every(([k, s]) => s.has(r[k])));
+    const cur = pick(from, to);
+    const pf = shiftYear(from, -1), pt = shiftYear(to, -1);
+    const prev = compare ? pick(pf, pt) : [];
+    const M = MEASURES[measure];
+    const aggBy = (rows, d) => { const m = new Map(); for (const r of rows) { const k = d ? r[d] : ""; let c = m.get(k); if (!c) m.set(k, c = { net: 0, cost: 0, qty: 0 }); c.net += r.net; c.cost += r.cost; c.qty += r.qty; } return m; };
+    const fdesc = Object.entries(filters).map(([k, v]) => `${DIMS[k]}: ${v.join(", ")}`).join(" · ");
+    const scope = `${plabel}${fdesc ? " · " + fdesc : ""}`;
+
+    if (!cur.length) return { html: `Δεν βρήκα δεδομένα για ${esc(scope)}.`, say: "Δεν βρήκα δεδομένα για αυτή την περίοδο.", extra: null };
+
+    const cfg = { rows: dims.length ? dims.slice(0, 2) : ["category"], cols: compare ? ["year"] : [], measure,
+                  from: compare ? clampMonth(pf, false) : from, to, filters };
+    const nameLbl = `${M[0]}${dims.length ? " ανά " + dims.map(d => ANA[d]).join(" και ") : ""}`;
+
+    // Χωρίς διάσταση: ένα σύνολο
+    if (!dims.length) {
+      const cv = M[1](aggBy(cur, null).get(""));
+      let html = `<strong>${esc(M[0])}</strong>, ${esc(scope)}: <strong>${M[2](cv)}</strong>`;
+      let say = `${M[0]} για ${plabel}: ${M[2](cv)}.`;
+      if (compare) {
+        const pv0 = prev.length ? M[1](aggBy(prev, null).get("")) : 0;
+        const diff = measure === "margin_pct" ? `${(cv - pv0 >= 0 ? "+" : "")}${(cv - pv0).toLocaleString("el-GR", { maximumFractionDigits: 1 })} μονάδες` : pv0 ? pct((cv / pv0 - 1) * 100) : "—";
+        html += ` έναντι ${M[2](pv0)} το ίδιο διάστημα πέρσι (<strong>${diff}</strong>).`;
+        say += ` Πέρσι ${M[2](pv0)}, μεταβολή ${diff}.`;
+      }
+      return { html: html + `<br><span class="sub">Μπορείτε να ζητήσετε και ανάλυση, π.χ. «ανά πελάτη» ή «ανά κατηγορία».</span>`, say, extra: { cfg, name: nameLbl } };
+    }
+
+    // Με διάσταση: πίνακας
+    const d = dims[0];
+    const cm = aggBy(cur, d), pm = compare ? aggBy(prev, d) : new Map();
+    let list = [...cm.entries()].map(([k, c]) => {
+      const v = M[1](c), p = pm.get(k) ? M[1](pm.get(k)) : null;
+      const ch = p === null ? null : measure === "margin_pct" ? v - p : (p ? (v / p - 1) * 100 : null);
+      return { k, v, p, ch };
+    });
+    if (compare) list.sort((a, b) => down ? (a.ch ?? 1e9) - (b.ch ?? 1e9) : (b.ch ?? -1e9) - (a.ch ?? -1e9));
+    else if (["month", "quarter", "year"].includes(d) && !topM && !down) list.sort((a, b) => a.k.localeCompare(b.k));
+    else list.sort((a, b) => down ? a.v - b.v : b.v - a.v);
+    if (compare && down) list = list.filter(x => x.ch !== null && x.ch < 0);
+    if (compare && /αυξ|ανεβ|αναπτ|βελτιω/.test(t)) list = list.filter(x => x.ch !== null && x.ch > 0);
+    const shown = list.slice(0, topN);
+    const chFmt = x => x === null ? "—" : measure === "margin_pct" ? `${x >= 0 ? "+" : ""}${x.toLocaleString("el-GR", { maximumFractionDigits: 1 })} μον.` : pct(x);
+    const table = `<div class="scroll"><table><thead><tr><th>${esc(DIMS[d])}</th><th class="n">${esc(M[0])}</th>${compare ? '<th class="n">Πέρσι</th><th class="n">Μεταβολή</th>' : ""}</tr></thead><tbody>` +
+      shown.map(x => `<tr><td>${esc(dimLabel(d, x.k))}</td><td class="n">${M[2](x.v)}</td>${compare ? `<td class="n">${x.p === null ? "—" : M[2](x.p)}</td><td class="n ${x.ch === null ? "" : x.ch >= 0 ? "up" : "down"}">${chFmt(x.ch)}</td>` : ""}</tr>`).join("") +
+      "</tbody></table></div>";
+    let head, say;
+    if (!shown.length) {
+      head = `Κανένα στοιχείο «${esc(DIMS[d].toLowerCase())}» δεν ${down ? "έπεσε" : "ανέβηκε"} σε σχέση με πέρσι (${esc(scope)}).`;
+      say = head.replace(/<[^>]+>/g, "");
+      return { html: head, say, extra: { cfg, name: nameLbl } };
+    }
+    const first = shown[0];
+    if (compare) {
+      head = `${esc(M[0])} ανά ${esc(ANA[d])}, ${esc(scope)}, σε σύγκριση με το ίδιο διάστημα πέρσι. ` +
+        `${down ? "Μεγαλύτερη πτώση" : "Μεγαλύτερη αύξηση"}: <strong>${esc(dimLabel(d, first.k))}</strong> (${chFmt(first.ch)}).`;
+      say = `${down ? "Μεγαλύτερη πτώση" : "Μεγαλύτερη αύξηση"} έχει ${dimLabel(d, first.k)}, ${chFmt(first.ch).replace("μον.", "μονάδες")}.` + (shown.length > 1 ? ` Ακολουθεί ${dimLabel(d, shown[1].k)}.` : "");
+    } else {
+      const chrono = ["month", "quarter", "year"].includes(d) && !topM && !down;
+      const best = chrono ? [...shown].sort((a, b) => b.v - a.v)[0] : first;
+      head = `${esc(M[0])} ανά ${esc(ANA[d])}, ${esc(scope)}. ${chrono ? "Υψηλότερο" : down ? "Χαμηλότερο" : "Πρώτο"}: <strong>${esc(dimLabel(d, best.k))}</strong> με ${M[2](best.v)}.`;
+      say = chrono ? `Το υψηλότερο είναι ${dimLabel(d, best.k)} με ${M[2](best.v)}.` : `${down ? "Χαμηλότερο" : "Πρώτο"} είναι ${dimLabel(d, first.k)} με ${M[2](first.v)}.` + (shown.length > 1 ? ` Δεύτερο ${dimLabel(d, shown[1].k)} με ${M[2](shown[1].v)}.` : "");
+    }
+    if (list.length > shown.length) head += ` <span class="sub">(εμφανίζονται ${shown.length} από ${list.length})</span>`;
+    return { html: head, say, extra: { cfg, name: nameLbl, table } };
+  }
+
+  function answerBalances(t) {
+    const only90 = /90|καθυστερ|ληξιπροθ/.test(t);
+    let list = [...S.balances].sort((a, b) => (only90 ? b.d90p - a.d90p : b.balance - a.balance));
+    if (only90) list = list.filter(b => +b.d90p > 0 || b.avg_days > 90);
+    const tot = list.reduce((s, b) => s + +b.balance, 0);
+    if (!list.length) return { html: "Δεν υπάρχουν πελάτες με υπόλοιπο πάνω από 90 μέρες.", say: "Δεν υπάρχουν πελάτες με υπόλοιπο πάνω από 90 μέρες.", extra: null };
+    const table = `<div class="scroll"><table><thead><tr><th>Πελάτης</th><th class="n">Υπόλοιπο</th><th class="n">90+ μέρες</th><th class="n">Μέρες είσπραξης</th></tr></thead><tbody>` +
+      list.slice(0, 10).map(b => `<tr><td>${esc(b.customer)}</td><td class="n">${eur.format(b.balance)}</td><td class="n">${eur.format(b.d90p)}</td><td class="n">${b.avg_days}</td></tr>`).join("") + "</tbody></table></div>";
+    const html = only90
+      ? `${list.length} ${list.length === 1 ? "πελάτης έχει" : "πελάτες έχουν"} υπόλοιπα πάνω από 90 μέρες, συνολικό ανοιχτό υπόλοιπο <strong>${eur.format(tot)}</strong>.`
+      : `Συνολικά ανοιχτά υπόλοιπα πελατών: <strong>${eur.format(tot)}</strong>. Οι μεγαλύτεροι:`;
+    const say = only90 ? `${list.length} πελάτες έχουν υπόλοιπα πάνω από 90 μέρες, με πρώτο τον ${list[0].customer}.` : `Τα ανοιχτά υπόλοιπα είναι ${eur.format(tot)}. Το μεγαλύτερο έχει ${list[0].customer}.`;
+    return { html, say, extra: { table } };
+  }
+  function answerStock() {
+    const cutoff = new Date(S.maxDate); cutoff.setDate(cutoff.getDate() - 90);
+    const slow = S.stock.filter(s => s.last_sale && new Date(s.last_sale) < cutoff).sort((a, b) => b.value - a.value);
+    const tot = S.stock.reduce((s, x) => s + +x.value, 0), sv = slow.reduce((s, x) => s + +x.value, 0);
+    const table = slow.length ? `<div class="scroll"><table><thead><tr><th>Είδος</th><th class="n">Απόθεμα</th><th class="n">Αξία</th><th class="n">Τελευταία πώληση</th></tr></thead><tbody>` +
+      slow.map(s => `<tr><td>${esc(s.item)}</td><td class="n">${nf0.format(s.qty)}</td><td class="n">${eur.format(s.value)}</td><td class="n">${fmtDate(s.last_sale)}</td></tr>`).join("") + "</tbody></table></div>" : "";
+    const html = `Αξία αποθέματος <strong>${eur.format(tot)}</strong>. ${slow.length} ${slow.length === 1 ? "είδος δεν έχει" : "είδη δεν έχουν"} πωληθεί πάνω από 90 μέρες, αξίας <strong>${eur.format(sv)}</strong>.`;
+    return { html, say: `Η αξία του αποθέματος είναι ${eur.format(tot)}. ${slow.length} είδη δεν κινούνται πάνω από 90 μέρες, αξίας ${eur.format(sv)}.`, extra: { table } };
+  }
+  function answerInsights() {
+    const html = "Αυτά αξίζουν την προσοχή σας:<ul>" + S.insights.map(i => `<li><strong>${esc(i.title)}</strong>. ${esc(i.action)}</li>`).join("") + "</ul>";
+    return { html, say: S.insights.map(i => i.title).join(". ") + ".", extra: { table: "" } };
+  }
 
   // αρχικά: αν δεν υπάρχει session, δείξε login
   sb.auth.getSession().then(({ data }) => { if (!data.session) { $("loginView").hidden = false; } });
