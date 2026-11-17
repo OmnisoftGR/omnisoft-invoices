@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omnisoft BI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: σταθερό header με καρτέλες, περιεχόμενο σε κεντραρισμένο πλέγμα, μία στήλη στο κινητό */
+:root {
+  --bg: #f3f5f4; --surface: #ffffff; --ink: #17221f; --muted: #5d6b67; --line: #dbe2df;
+  --accent: #1f6f5c; --accent-soft: #e2f0eb;
+  --good: #2e7d32; --warn: #b26a00; --bad: #c0392b;
+  --good-soft: #e5f3e6; --warn-soft: #fbefdc; --bad-soft: #f8e2df;
+  --font: "Commissioner", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101614; --surface: #182120; --ink: #e7eeeb; --muted: #9aaba6; --line: #2a3633;
+    --accent: #5cc3a6; --accent-soft: #1d3a33;
+    --good: #6cc070; --warn: #e2a64a; --bad: #ec7b6e;
+    --good-soft: #1e3320; --warn-soft: #3a2c15; --bad-soft: #3d1f1b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101614; --surface: #182120; --ink: #e7eeeb; --muted: #9aaba6; --line: #2a3633;
+  --accent: #5cc3a6; --accent-soft: #1d3a33;
+  --good: #6cc070; --warn: #e2a64a; --bad: #ec7b6e;
+  --good-soft: #1e3320; --warn-soft: #3a2c15; --bad-soft: #3d1f1b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.num, td.n, .kpi .value { font-variant-numeric: tabular-nums; }
+[hidden] { display: none !important; }
+button, select, input { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Login */
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px 24px; display: grid; gap: 14px; }
+.login h1 { margin: 0; font-size: 22px; }
+.login p { margin: 0; color: var(--muted); font-size: 14px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 13px; color: var(--muted); }
+input[type=email], input[type=password], input[type=text], select {
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font-size: 14px;
+}
+.btn { cursor: pointer; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; background: var(--accent); color: var(--surface); }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+.btn:disabled { opacity: .6; cursor: wait; }
+.error { color: var(--bad); font-size: 13px; }
+
+/* Header */
+header { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.bar { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+.brand .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--surface); display: grid; place-items: center; font-size: 14px; }
+.tenant { font-weight: 600; }
+.who { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+nav.tabs { max-width: 1240px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
+nav.tabs a { text-decoration: none; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; font-weight: 600; font-size: 14px; white-space: nowrap; }
+nav.tabs a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 18px; }
+h2 { font-size: 16px; margin: 0 0 12px; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 13px; margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+
+/* Insights */
+.ai { border-color: var(--accent); }
+.ai-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.ai-head h2 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.ai-badge { font-size: 11px; font-weight: 700; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 6px; }
+.insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.insight { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.insight.bad { border-left-color: var(--bad); } .insight.warn { border-left-color: var(--warn); } .insight.good { border-left-color: var(--good); }
+.insight .tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.insight.bad .tag { color: var(--bad); } .insight.warn .tag { color: var(--warn); } .insight.good .tag { color: var(--good); }
+.insight strong { font-size: 14px; }
+.insight p { margin: 0; font-size: 13px; color: var(--muted); }
+.insight .act { font-size: 13px; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.kpi .label { font-size: 13px; color: var(--muted); }
+.kpi .value { font-size: 26px; font-weight: 700; margin: 2px 0; }
+.kpi .delta { font-size: 13px; font-weight: 600; }
+.up { color: var(--good); } .down { color: var(--bad); } .flat { color: var(--muted); }
+
+.grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.chart-box { position: relative; height: 280px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th.n, td.n { text-align: right; }
+.scroll { overflow-x: auto; }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.good { background: var(--good-soft); color: var(--good); } .chip.warn { background: var(--warn-soft); color: var(--warn); } .chip.bad { background: var(--bad-soft); color: var(--bad); }
+
+/* Pivot */
+.pv-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; align-items: end; }
+.pv-controls .field select { width: 100%; }
+.pv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.pv-actions input { flex: 1; min-width: 180px; }
+table.pivot th { position: sticky; top: 0; background: var(--surface); cursor: pointer; }
+table.pivot th:first-child, table.pivot td:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+table.pivot td.n { white-space: nowrap; }
+table.pivot tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
+table.pivot td.tot { font-weight: 700; }
+.pv-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--line); border-radius: 10px; }
+.sorted::after { content: " ▾"; }
+
+/* Reports */
+.reports { display: grid; gap: 10px; }
+.report { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.report .name { font-weight: 600; }
+.report .meta { font-size: 12.5px; color: var(--muted); flex: 1; min-width: 200px; }
+.loading { color: var(--muted); padding: 40px 0; text-align: center; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 24px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="loginView" hidden>
+  <form class="login" id="loginForm">
+    <div class="brand"><div class="mark">Ω</div>omnisoft BI</div>
+    <h1>Σύνδεση</h1>
+    <p>Δείτε τα στοιχεία της επιχείρησής σας από το Galaxy ERP.</p>
+    <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="password">Κωδικός</label><input id="password" type="password" autocomplete="current-password" required></div>
+    <button class="btn" id="loginBtn" type="submit">Σύνδεση</button>
+    <div class="error" id="loginError" role="alert"></div>
+  </form>
+</div>
+
+<!-- App -->
+<div id="appView" hidden>
+  <header>
+    <div class="bar">
+      <div class="brand"><div class="mark">Ω</div>omnisoft BI</div>
+      <span class="tenant" id="tenantName"></span>
+      <div class="who"><span id="userEmail"></span><button class="btn ghost" id="logoutBtn" type="button">Αποσύνδεση</button></div>
+    </div>
+    <nav class="tabs" aria-label="Ενότητες">
+      <a href="#overview" data-view="overview">Επισκόπηση</a>
+      <a href="#pivot" data-view="pivot">Ανάλυση (pivot)</a>
+      <a href="#reports" data-view="reports">Αναφορές</a>
+    </nav>
+  </header>
+
+  <main id="loading" class="loading">Φόρτωση δεδομένων…</main>
+
+  <!-- Επισκόπηση -->
+  <main id="overview" hidden>
+    <p class="sub" id="periodText"></p>
+    <section class="card ai">
+      <div class="ai-head">
+        <h2><span class="ai-badge">AI</span> Τι αξίζει την προσοχή σας</h2>
+        <span class="sub" id="insightsDate"></span>
+      </div>
+      <div class="insights" id="insights"></div>
+    </section>
+    <section class="kpis" id="kpis" aria-label="Βασικοί δείκτες"></section>
+    <div class="grid2">
+      <section class="card"><h2>Πωλήσεις ανά μήνα: φέτος έναντι πέρσι</h2><div class="chart-box"><canvas id="salesChart"></canvas></div></section>
+      <section class="card"><h2>Μεικτό κέρδος % ανά κατηγορία</h2><div class="chart-box"><canvas id="marginChart"></canvas></div></section>
+    </div>
+    <section class="card">
+      <h2>Κορυφαίοι πελάτες</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Πελάτης</th><th class="n">Πωλήσεις</th><th class="n">Μεταβολή</th><th class="n">Μ.Κ. %</th><th class="n">Υπόλοιπο</th><th class="n">Μέρες είσπραξης</th><th>Κατάσταση</th></tr></thead>
+        <tbody id="customers"></tbody>
+      </table></div>
+    </section>
+    <div class="grid2">
+      <section class="card">
+        <h2>Είδη χωρίς κίνηση πάνω από 90 μέρες</h2>
+        <div class="scroll"><table>
+          <thead><tr><th>Είδος</th><th class="n">Απόθεμα</th><th class="n">Αξία</th><th class="n">Τελευταία πώληση</th></tr></thead>
+          <tbody id="slow"></tbody>
+        </table></div>
+      </section>
+      <section class="card"><h2>Ενηλικίωση υπολοίπων πελατών</h2><div class="chart-box"><canvas id="agingChart"></canvas></div></section>
+    </div>
+  </main>
+
+  <!-- Pivot -->
+  <main id="pivot" hidden>
+    <section class="card">
+      <h2 id="pvTitle">Ανάλυση πωλήσεων</h2>
+      <div class="pv-controls">
+        <div class="field"><label for="pvRows">Γραμμές</label><select id="pvRows"></select></div>
+        <div class="field"><label for="pvCols">Στήλες</label><select id="pvCols"></select></div>
+        <div class="field"><label for="pvMeasure">Μέτρο</label><select id="pvMeasure"></select></div>
+        <div class="field"><label for="pvYear">Έτος</label><select id="pvYear"></select></div>
+        <div class="field"><label for="pvFilterDim">Φίλτρο</label><select id="pvFilterDim"></select></div>
+        <div class="field"><label for="pvFilterVal">Τιμή φίλτρου</label><select id="pvFilterVal"></select></div>
+      </div>
+      <div class="pv-actions">
+        <input type="text" id="pvName" placeholder="Όνομα αναφοράς για αποθήκευση">
+        <button class="btn" id="pvSave" type="button">Αποθήκευση ως αναφορά</button>
+        <button class="btn ghost" id="pvCsv" type="button">Εξαγωγή CSV</button>
+        <span class="sub" id="pvMsg" role="status"></span>
+      </div>
+    </section>
+    <div class="pv-wrap"><table class="pivot" id="pvTable"></table></div>
+    <p class="sub">Πατήστε την επικεφαλίδα μιας στήλης για ταξινόμηση.</p>
+  </main>
+
+  <!-- Αναφορές -->
+  <main id="reports" hidden>
+    <section class="card">
+      <h2>Αναφορές της επιχείρησης</h2>
+      <p class="sub" style="margin-bottom:12px">Οι αναφορές είναι ξεχωριστές για κάθε επιχείρηση. Οι προκαθορισμένες στήνονται από την Omnisoft, τις υπόλοιπες τις αποθηκεύουν οι χρήστες σας από την Ανάλυση.</p>
+      <div class="reports" id="reportList"></div>
+    </section>
+  </main>
+  <footer>omnisoft.gr · Demo με εικονικά δεδομένα</footer>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const eur = new Intl.NumberFormat("el-GR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  const nf0 = new Intl.NumberFormat("el-GR", { maximumFractionDigits: 0 });
+  const eurK = v => Math.abs(v) >= 1e6 ? (v / 1e6).toLocaleString("el-GR", { maximumFractionDigits: 2 }) + " εκ. €"
+                                       : nf0.format(v / 1000) + " χιλ. €";
+  const pct = (v, d = 1) => (v > 0 ? "+" : "") + v.toLocaleString("el-GR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+  const pct0 = (v, d = 1) => v.toLocaleString("el-GR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const MONTHS = ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μάι", "Ιουν", "Ιουλ", "Αυγ", "Σεπ", "Οκτ", "Νοε", "Δεκ"];
+  const fmtDate = d => d ? d.split("-").reverse().join("/") : "";
+
+  const cfg = window.OMNI_CONFIG || {};
+  if (!cfg.key || cfg.key.indexOf("ΒΑΛΤΕ") === 0) {
+    document.body.innerHTML = '<div class="login-wrap"><div class="login"><h1>Λείπει το key</h1><p>Συμπληρώστε το publishable key του Supabase στο αρχείο config.js.</p></div></div>';
+    return;
+  }
+  const sb = window.supabase.createClient(cfg.url, cfg.key);
+
+  let S = null;      // δεδομένα επιχείρησης
+  let user = null;
+
+  // ---------- Auth ----------
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("loginError").textContent = "";
+    $("loginBtn").disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+    $("loginBtn").disabled = false;
+    if (error) $("loginError").textContent = "Λάθος email ή κωδικός.";
+  });
+  $("logoutBtn").addEventListener("click", () => sb.auth.signOut());
+
+  sb.auth.onAuthStateChange((_ev, session) => {
+    if (session && (!user || user.id !== session.user.id)) { user = session.user; start(); }
+    if (!session) { user = null; S = null; $("appView").hidden = true; $("loginView").hidden = false; }
+  });
+
+  async function fetchAll(table, select, order) {
+    const size = 1000; let from = 0, out = [];
+    for (;;) {
+      const { data, error } = await sb.from(table).select(select).order(order).range(from, from + size - 1);
+      if (error) throw error;
+      out = out.concat(data);
+      if (data.length < size) break;
+      from += size;
+    }
+    return out;
+  }
+
+  async function start() {
+    $("loginView").hidden = true; $("appView").hidden = false;
+    $("userEmail").textContent = user.email;
+    showOnly("loading");
+    try {
+      const { data: tenants, error } = await sb.from("tenants").select("id,name");
+      if (error) throw error;
+      if (!tenants.length) {
+        $("loading").textContent = "Ο λογαριασμός σας δεν έχει συνδεθεί ακόμα με επιχείρηση. Επικοινωνήστε με την Omnisoft.";
+        return;
+      }
+      const [sales, balances, stock, insights, reports] = await Promise.all([
+        fetchAll("bi_sales", "doc_date,customer,customer_group,region,salesperson,item_code,item,category,brand,qty,net_amount,cost_amount", "id"),
+        fetchAll("bi_customer_balances", "*", "customer"),
+        fetchAll("bi_stock", "*", "item_code"),
+        fetchAll("bi_insights", "*", "id"),
+        fetchAll("bi_reports", "*", "created_at")
+      ]);
+      sales.forEach(r => {
+        r.net = +r.net_amount; r.cost = +r.cost_amount; r.qty = +r.qty;
+        r.year = r.doc_date.slice(0, 4);
+        r.month = r.doc_date.slice(0, 7);
+        r.quarter = r.year + " Τ" + (Math.floor((+r.doc_date.slice(5, 7) - 1) / 3) + 1);
+      });
+      const maxDate = sales.reduce((m, r) => r.doc_date > m ? r.doc_date : m, "0000");
+      S = { tenant: tenants[0], sales, balances, stock, insights, reports,
+            curYear: maxDate.slice(0, 4), lastMonth: +maxDate.slice(5, 7), maxDate };
+      $("tenantName").textContent = S.tenant.name;
+      initPivot();
+      route();
+    } catch (err) {
+      $("loading").textContent = "Σφάλμα φόρτωσης: " + (err.message || err);
+    }
+  }
+
+  // ---------- Routing ----------
+  const VIEWS = ["overview", "pivot", "reports"];
+  function showOnly(id) {
+    ["loading", ...VIEWS].forEach(v => { $(v).hidden = v !== id; });
+    document.querySelectorAll("nav.tabs a").forEach(a => {
+      if (a.dataset.view === id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+  }
+  function route() {
+    if (!S) return;
+    const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
+    showOnly(v);
+    if (v === "overview") renderOverview();
+    if (v === "pivot") renderPivot();
+    if (v === "reports") renderReports();
+  }
+  window.addEventListener("hashchange", route);
+
+  // ---------- Επισκόπηση ----------
+  let charts = [];
+  function sum(rows, f) { let s = 0; for (const r of rows) s += f(r); return s; }
+  function renderOverview() {
+    const cy = S.curYear, py = String(+cy - 1), lm = S.lastMonth;
+    const inPeriod = (r, y) => r.year === y && +r.doc_date.slice(5, 7) <= lm;
+    const cur = S.sales.filter(r => inPeriod(r, cy)), prev = S.sales.filter(r => inPeriod(r, py));
+    const sc = sum(cur, r => r.net), sp = sum(prev, r => r.net);
+    const mc = 100 * (1 - sum(cur, r => r.cost) / sc), mp = 100 * (1 - sum(prev, r => r.cost) / sp);
+    const bal = sum(S.balances, b => +b.balance), b90 = sum(S.balances, b => +b.d90p);
+    const stockVal = sum(S.stock, s => +s.value);
+    const cutoff = new Date(S.maxDate); cutoff.setDate(cutoff.getDate() - 90);
+    const slow = S.stock.filter(s => s.last_sale && new Date(s.last_sale) < cutoff).sort((a, b) => b.value - a.value);
+    const slowVal = sum(slow, s => +s.value);
+
+    $("periodText").textContent = `Περίοδος: Ιανουάριος – ${["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"][lm - 1]} ${cy}, σύγκριση με το ίδιο διάστημα ${py}.`;
+    $("insightsDate").textContent = S.insights.length ? "Ενημέρωση: " + new Date(S.insights[0].created_at).toLocaleDateString("el-GR") : "";
+    $("insights").innerHTML = S.insights.map(i => `
+      <article class="insight ${esc(i.severity)}"><span class="tag">${esc(i.tag)}</span><strong>${esc(i.title)}</strong>
+      <p>${esc(i.body)}</p><span class="act">${esc(i.action)}</span></article>`).join("") || '<p class="sub">Δεν υπάρχουν νέες παρατηρήσεις.</p>';
+
+    const md = mc - mp, sd = (sc / sp - 1) * 100, mdR = (Math.round(md * 10) / 10) || 0;
+    $("kpis").innerHTML = [
+      { l: "Πωλήσεις (καθαρή αξία)", v: eurK(sc), d: `${pct(sd)} έναντι ${py}`, c: sd >= 0 ? "up" : "down" },
+      { l: "Μεικτό κέρδος %", v: pct0(mc), d: `${mdR > 0 ? "+" : ""}${mdR.toLocaleString("el-GR")} μον. έναντι ${py}`, c: mdR > 0 ? "up" : mdR < 0 ? "down" : "flat" },
+      { l: "Ανοιχτά υπόλοιπα πελατών", v: eurK(bal), d: `${eurK(b90)} πάνω από 90 μέρες`, c: b90 > 0 ? "down" : "flat" },
+      { l: "Αξία αποθέματος", v: eurK(stockVal), d: `${eurK(slowVal)} χωρίς κίνηση 90+ ημερών`, c: slowVal > 0 ? "down" : "flat" }
+    ].map(k => `<div class="card kpi"><div class="label">${k.l}</div><div class="value">${k.v}</div><div class="delta ${k.c}">${k.d}</div></div>`).join("");
+
+    // πελάτες
+    const by = (rows, key) => rows.reduce((m, r) => { (m[r[key]] = m[r[key]] || []).push(r); return m; }, {});
+    const cc = by(cur, "customer"), pc = by(prev, "customer");
+    const balMap = Object.fromEntries(S.balances.map(b => [b.customer, b]));
+    const custRows = Object.keys(cc).map(name => {
+      const s = sum(cc[name], r => r.net), p = pc[name] ? sum(pc[name], r => r.net) : 0;
+      const b = balMap[name] || {};
+      return { name, s, ch: p ? (s / p - 1) * 100 : 0, m: 100 * (1 - sum(cc[name], r => r.cost) / s), bal: +b.balance || 0, days: b.avg_days || 0 };
+    }).sort((a, b) => b.s - a.s).slice(0, 10);
+    $("customers").innerHTML = custRows.map(x => {
+      const st = x.days > 90 ? ["bad", "Καθυστέρηση"] : x.ch < -8 ? ["warn", "Μειώνει αγορές"] : x.ch > 10 ? ["good", "Αναπτύσσεται"] : ["good", "Κανονικά"];
+      return `<tr><td>${esc(x.name)}</td><td class="n">${eur.format(x.s)}</td><td class="n ${x.ch >= 0 ? "up" : "down"}">${pct(x.ch)}</td>
+        <td class="n">${pct0(x.m)}</td><td class="n">${eur.format(x.bal)}</td><td class="n">${x.days}</td><td><span class="chip ${st[0]}">${st[1]}</span></td></tr>`;
+    }).join("");
+    $("slow").innerHTML = slow.map(s => `<tr><td>${esc(s.item)}</td><td class="n">${nf0.format(s.qty)}</td><td class="n">${eur.format(s.value)}</td><td class="n">${fmtDate(s.last_sale)}</td></tr>`).join("")
+      || '<tr><td colspan="4" class="sub">Κανένα είδος.</td></tr>';
+
+    // γραφήματα
+    charts.forEach(c => c.destroy()); charts = [];
+    const ink = css("--muted"), line = css("--line"), accent = css("--accent");
+    Chart.defaults.color = ink; Chart.defaults.font = { family: css("--font"), size: 12 };
+    const grid = { color: line, drawTicks: false };
+    const months = Array.from({ length: lm }, (_, i) => i + 1);
+    const mSum = (rows, m) => sum(rows.filter(r => +r.doc_date.slice(5, 7) === m), r => r.net);
+    charts.push(new Chart($("salesChart"), {
+      type: "bar",
+      data: { labels: months.map(m => MONTHS[m - 1]), datasets: [
+        { label: cy, data: months.map(m => mSum(cur, m)), backgroundColor: accent, borderRadius: 4, maxBarThickness: 34 },
+        { type: "line", label: py, data: months.map(m => mSum(prev, m)), borderColor: ink, backgroundColor: ink, borderDash: [5, 4], pointRadius: 3, tension: .3 }
+      ] },
+      options: { maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${eur.format(c.parsed.y)}` } } },
+        scales: { x: { grid: { display: false } }, y: { grid, border: { display: false }, ticks: { callback: v => nf0.format(v / 1000) + "k" } } } }
+    }));
+    const catC = by(cur, "category"), catP = by(prev, "category");
+    const cats = Object.keys(catC).map(k => ({ k, m: 100 * (1 - sum(catC[k], r => r.cost) / sum(catC[k], r => r.net)),
+      p: catP[k] ? 100 * (1 - sum(catP[k], r => r.cost) / sum(catP[k], r => r.net)) : 0 })).sort((a, b) => b.m - a.m);
+    charts.push(new Chart($("marginChart"), {
+      type: "bar",
+      data: { labels: cats.map(c => c.k), datasets: [
+        { label: cy, data: cats.map(c => c.m), backgroundColor: cats.map(c => c.m - c.p < -1 ? css("--bad") : accent), borderRadius: 4, barThickness: 14 },
+        { label: py, data: cats.map(c => c.p), backgroundColor: line, borderRadius: 4, barThickness: 14 }
+      ] },
+      options: { indexAxis: "y", maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct0(c.parsed.x)}` } } },
+        scales: { x: { grid, border: { display: false }, min: 0, ticks: { callback: v => v + "%" } }, y: { grid: { display: false } } } }
+    }));
+    const ag = [["0–30", "d0_30"], ["31–60", "d31_60"], ["61–90", "d61_90"], ["90+", "d90p"]];
+    charts.push(new Chart($("agingChart"), {
+      type: "bar",
+      data: { labels: ag.map(a => a[0] + " μέρες"), datasets: [{ data: ag.map(a => sum(S.balances, b => +b[a[1]])),
+        backgroundColor: [css("--good"), accent, css("--warn"), css("--bad")], borderRadius: 4, maxBarThickness: 48 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => eur.format(c.parsed.y) } } },
+        scales: { x: { grid: { display: false } }, y: { grid, border: { display: false }, ticks: { callback: v => nf0.format(v / 1000) + "k" } } } }
+    }));
+  }
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (S && !$("overview").hidden) renderOverview(); }); } catch (e) {}
+
+  // ---------- Pivot ----------
+  const DIMS = {
+    none: "— Καμία —", customer: "Πελάτης", customer_group: "Ομάδα πελατών", region: "Περιοχή", salesperson: "Πωλητής",
+    category: "Κατηγορία", brand: "Μάρκα", item: "Είδος", year: "Έτος", quarter: "Τρίμηνο", month: "Μήνας"
+  };
+  const MEASURES = {
+    net: ["Πωλήσεις (€)", c => c.net, v => eur.format(v)],
+    qty: ["Ποσότητα", c => c.qty, v => nf0.format(v)],
+    gross: ["Μεικτό κέρδος (€)", c => c.net - c.cost, v => eur.format(v)],
+    margin_pct: ["Μεικτό κέρδος %", c => c.net ? 100 * (1 - c.cost / c.net) : 0, v => pct0(v)],
+    cost: ["Κόστος (€)", c => c.cost, v => eur.format(v)]
+  };
+  const dimLabel = (d, v) => d === "month" ? MONTHS[+v.slice(5, 7) - 1] + " " + v.slice(0, 4) : v;
+  let pv = { rows: "customer", cols: "month", measure: "net", year: "", filter: {} , sortCol: "__total" };
+
+  function fillSelect(el, entries, val) {
+    el.innerHTML = entries.map(([k, l]) => `<option value="${esc(k)}">${esc(l)}</option>`).join("");
+    el.value = val;
+  }
+  function initPivot() {
+    const years = [...new Set(S.sales.map(r => r.year))].sort();
+    pv.year = S.curYear;
+    fillSelect($("pvRows"), Object.entries(DIMS).filter(([k]) => k !== "none"), pv.rows);
+    fillSelect($("pvCols"), Object.entries(DIMS), pv.cols);
+    fillSelect($("pvMeasure"), Object.entries(MEASURES).map(([k, v]) => [k, v[0]]), pv.measure);
+    fillSelect($("pvYear"), [["", "Όλα"], ...years.map(y => [y, y])], pv.year);
+    fillSelect($("pvFilterDim"), [["", "— Χωρίς φίλτρο —"], ...Object.entries(DIMS).filter(([k]) => !["none", "year", "month", "quarter"].includes(k))], "");
+    fillFilterVals("");
+    ["pvRows", "pvCols", "pvMeasure", "pvYear", "pvFilterVal"].forEach(id => $(id).addEventListener("change", readPivot));
+    $("pvFilterDim").addEventListener("change", () => { fillFilterVals(""); readPivot(); });
+    $("pvSave").addEventListener("click", saveReport);
+    $("pvCsv").addEventListener("click", exportCsv);
+  }
+  function fillFilterVals(val) {
+    const d = $("pvFilterDim").value;
+    const vals = d ? [...new Set(S.sales.map(r => r[d]))].sort((a, b) => a.localeCompare(b, "el")) : [];
+    fillSelect($("pvFilterVal"), d ? vals.map(v => [v, v]) : [["", "—"]], d ? (val || vals[0]) : "");
+    $("pvFilterVal").disabled = !d;
+  }
+  function readPivot() {
+    pv.rows = $("pvRows").value; pv.cols = $("pvCols").value; pv.measure = $("pvMeasure").value; pv.year = $("pvYear").value;
+    const fd = $("pvFilterDim").value;
+    pv.filter = fd ? { [fd]: $("pvFilterVal").value } : {};
+    pv.sortCol = "__total";
+    $("pvTitle").textContent = "Ανάλυση πωλήσεων";
+    renderPivot();
+  }
+  function applyConfig(c, name) {
+    pv = { rows: c.rows || "customer", cols: c.cols || "none", measure: c.measure || "net", year: c.year ?? "", filter: c.filter || {}, sortCol: "__total" };
+    $("pvRows").value = pv.rows; $("pvCols").value = pv.cols; $("pvMeasure").value = pv.measure; $("pvYear").value = pv.year;
+    const fd = Object.keys(pv.filter)[0] || "";
+    $("pvFilterDim").value = fd; fillFilterVals(fd ? pv.filter[fd] : "");
+    $("pvTitle").textContent = name || "Ανάλυση πωλήσεων";
+    $("pvName").value = "";
+  }
+
+  let lastGrid = null;
+  function buildGrid() {
+    const rows = S.sales.filter(r => (!pv.year || r.year === pv.year) && Object.entries(pv.filter).every(([k, v]) => r[k] === v));
+    const cells = new Map(), rowT = new Map(), colT = new Map(), tot = { net: 0, cost: 0, qty: 0 };
+    const add = (m, k, r) => { let c = m.get(k); if (!c) m.set(k, c = { net: 0, cost: 0, qty: 0 }); c.net += r.net; c.cost += r.cost; c.qty += r.qty; };
+    for (const r of rows) {
+      const rk = r[pv.rows], ck = pv.cols === "none" ? "" : r[pv.cols];
+      add(cells, rk + "\u0001" + ck, r); add(rowT, rk, r); add(colT, ck, r);
+      tot.net += r.net; tot.cost += r.cost; tot.qty += r.qty;
+    }
+    const colKeys = pv.cols === "none" ? [] : [...colT.keys()].sort((a, b) => a.localeCompare(b, "el"));
+    const f = MEASURES[pv.measure][1];
+    let rowKeys = [...rowT.keys()];
+    const sortVal = k => pv.sortCol === "__total" ? f(rowT.get(k)) : f(cells.get(k + "\u0001" + pv.sortCol) || { net: 0, cost: 0, qty: 0 });
+    if (pv.sortCol === "__name") rowKeys.sort((a, b) => a.localeCompare(b, "el"));
+    else rowKeys.sort((a, b) => sortVal(b) - sortVal(a));
+    return { rowKeys, colKeys, cells, rowT, colT, tot, f, fmt: MEASURES[pv.measure][2] };
+  }
+  function renderPivot() {
+    if (!S) return;
+    const g = lastGrid = buildGrid();
+    const max = Math.max(1, ...g.rowKeys.flatMap(rk => g.colKeys.map(ck => Math.abs(g.f(g.cells.get(rk + "\u0001" + ck) || { net: 0, cost: 0, qty: 0 })))));
+    const shade = v => pv.measure === "margin_pct" || !g.colKeys.length ? "" :
+      `background: color-mix(in srgb, var(--accent) ${Math.round(Math.min(1, Math.abs(v) / max) * 28)}%, transparent)`;
+    const head = `<thead><tr><th data-sort="__name" class="${pv.sortCol === "__name" ? "sorted" : ""}">${esc(DIMS[pv.rows])}</th>` +
+      g.colKeys.map(ck => `<th class="n ${pv.sortCol === ck ? "sorted" : ""}" data-sort="${esc(ck)}">${esc(dimLabel(pv.cols, ck))}</th>`).join("") +
+      `<th class="n ${pv.sortCol === "__total" ? "sorted" : ""}" data-sort="__total">Σύνολο</th></tr></thead>`;
+    const body = g.rowKeys.map(rk => `<tr><td>${esc(dimLabel(pv.rows, rk))}</td>` +
+      g.colKeys.map(ck => { const c = g.cells.get(rk + "\u0001" + ck); if (!c) return '<td class="n"></td>';
+        const v = g.f(c); return `<td class="n" style="${shade(v)}">${g.fmt(v)}</td>`; }).join("") +
+      `<td class="n tot">${g.fmt(g.f(g.rowT.get(rk)))}</td></tr>`).join("");
+    const foot = `<tr class="total"><td>Σύνολο</td>` + g.colKeys.map(ck => `<td class="n">${g.fmt(g.f(g.colT.get(ck)))}</td>`).join("") +
+      `<td class="n">${g.fmt(g.f(g.tot))}</td></tr>`;
+    $("pvTable").innerHTML = head + "<tbody>" + body + foot + "</tbody>";
+  }
+  $("pvTable").addEventListener("click", e => {
+    const th = e.target.closest("th[data-sort]"); if (!th) return;
+    pv.sortCol = th.dataset.sort; renderPivot();
+  });
+
+  async function saveReport() {
+    const name = $("pvName").value.trim();
+    if (!name) { $("pvMsg").textContent = "Δώστε όνομα στην αναφορά."; $("pvName").focus(); return; }
+    const config = { rows: pv.rows, cols: pv.cols, measure: pv.measure, year: pv.year, filter: pv.filter };
+    $("pvSave").disabled = true;
+    const { data, error } = await sb.from("bi_reports").insert({ name, kind: "pivot", config }).select().single();
+    $("pvSave").disabled = false;
+    if (error) { $("pvMsg").textContent = "Δεν αποθηκεύτηκε: " + error.message; return; }
+    S.reports.push(data);
+    $("pvMsg").textContent = `Αποθηκεύτηκε: «${name}».`;
+    $("pvTitle").textContent = name; $("pvName").value = "";
+  }
+  function exportCsv() {
+    const g = lastGrid || buildGrid();
+    const q = s => `"${String(s).replace(/"/g, '""')}"`;
+    const num = v => (Math.round(v * 100) / 100).toString().replace(".", ",");
+    const lines = [[DIMS[pv.rows], ...g.colKeys.map(c => dimLabel(pv.cols, c)), "Σύνολο"].map(q).join(";")];
+    g.rowKeys.forEach(rk => lines.push([q(dimLabel(pv.rows, rk)), ...g.colKeys.map(ck => { const c = g.cells.get(rk + "\u0001" + ck); return c ? num(g.f(c)) : ""; }), num(g.f(g.rowT.get(rk)))].join(";")));
+    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = ($("pvTitle").textContent || "analysi") + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // ---------- Αναφορές ----------
+  function describe(c) {
+    const f = Object.entries(c.filter || {}).map(([k, v]) => `${DIMS[k]}: ${v}`).join(", ");
+    return `${DIMS[c.rows] || c.rows} × ${c.cols && c.cols !== "none" ? DIMS[c.cols] : "—"} · ${MEASURES[c.measure] ? MEASURES[c.measure][0] : c.measure}` +
+      `${c.year ? " · " + c.year : ""}${f ? " · " + f : ""}`;
+  }
+  function renderReports() {
+    $("reportList").innerHTML = S.reports.map(r => `
+      <div class="report">
+        <span class="name">${esc(r.name)}</span>
+        <span class="meta">${esc(describe(r.config))} · ${r.created_by ? (r.created_by === user.id ? "δική σας" : "χρήστη της επιχείρησης") : "προκαθορισμένη"}</span>
+        <button class="btn" type="button" data-open="${r.id}">Άνοιγμα</button>
+        ${r.created_by === user.id ? `<button class="btn ghost" type="button" data-del="${r.id}">Διαγραφή</button>` : ""}
+      </div>`).join("") || '<p class="sub">Δεν υπάρχουν αναφορές ακόμα.</p>';
+  }
+  $("reportList").addEventListener("click", async e => {
+    const o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
+    if (o) { const r = S.reports.find(x => x.id === o.dataset.open); applyConfig(r.config, r.name); if (location.hash === "#pivot") route(); else location.hash = "#pivot"; }
+    if (d) {
+      d.disabled = true;
+      const { error } = await sb.from("bi_reports").delete().eq("id", d.dataset.del);
+      if (!error) { S.reports = S.reports.filter(x => x.id !== d.dataset.del); renderReports(); } else d.disabled = false;
+    }
+  });
+
+  // αρχικά: αν δεν υπάρχει session, δείξε login
+  sb.auth.getSession().then(({ data }) => { if (!data.session) { $("loginView").hidden = false; } });
+})();
+</script>
+</body>
+</html>
