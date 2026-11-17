@@ -176,6 +176,41 @@ table.pivot thead tr:last-child th.n { text-align: right; }
 .msg { overflow-wrap: anywhere; }
 .pv-toggle { display: none; }
 
+/* Επισκόπηση: επιλογές */
+.ov-bar { display: grid; gap: 10px; }
+.ov-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ov-filters .field span { font-size: 12px; color: var(--muted); }
+.ov-filters select { width: 100%; }
+.ov-active { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.card-head h2 { margin: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--muted); padding: 5px 10px; font-size: 12.5px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.hint { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.kpi.click { text-align: left; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; }
+.kpi.click:hover { border-color: var(--accent); }
+table.clickable tbody tr { cursor: pointer; }
+table.clickable tbody tr:hover td { background: var(--accent-soft); }
+table.clickable thead th { cursor: pointer; }
+.print-only { display: none; }
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  body { background: #fff; color: #000; padding: 0; font-size: 10.5px; }
+  header, nav.tabs, footer, #pivot > section.card, #pivot > p.sub, .no-print { display: none !important; }
+  .print-only { display: block; }
+  #printHead h1 { font-size: 16px; margin: 0 0 4px; }
+  #printHead p { margin: 0 0 8px; color: #333; }
+  main { padding: 0; max-width: none; }
+  .pv-wrap { max-height: none; overflow: visible; border: 0; }
+  table.pivot th, table.pivot td { position: static !important; background-clip: padding-box; padding: 3px 5px; }
+  table.pivot { font-size: 10px; }
+  table.pivot td, table.pivot tr.grp td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table.pivot thead { display: table-header-group; }
+  table.pivot tr { break-inside: avoid; }
+}
+
 /* Αφή: μεγαλύτερα σημεία πατήματος */
 @media (pointer: coarse) {
   .dchip button { padding: 4px 8px; }
@@ -212,6 +247,8 @@ table.pivot thead tr:last-child th.n { text-align: right; }
   .kpi .value { font-size: 20px; }
   .kpi .label, .kpi .delta { font-size: 12px; }
   .insights { grid-template-columns: 1fr; }
+  .ov-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ov-filters select { padding: 6px 8px; font-size: 13px; }
   .chart-box { height: 230px; }
   .grid2 { gap: 12px; }
   /* Pivot */
@@ -279,7 +316,16 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
 
   <!-- Επισκόπηση -->
   <main id="overview" hidden>
-    <p class="sub" id="periodText"></p>
+    <section class="card ov-bar" aria-label="Επιλογές επισκόπησης">
+      <div class="periods" id="ovPeriods"></div>
+      <div class="ov-filters">
+        <label class="field"><span>Περιοχή</span><select id="ovf_region"></select></label>
+        <label class="field"><span>Πωλητής</span><select id="ovf_salesperson"></select></label>
+        <label class="field"><span>Ομάδα πελατών</span><select id="ovf_customer_group"></select></label>
+        <label class="field"><span>Κατηγορία</span><select id="ovf_category"></select></label>
+      </div>
+      <div class="ov-active"><span class="sub" id="periodText"></span><button type="button" class="qbtn" id="ovClear" hidden>Καθαρισμός επιλογών</button></div>
+    </section>
     <section class="card ai">
       <div class="ai-head">
         <h2><span class="ai-badge">AI</span> Τι αξίζει την προσοχή σας</h2>
@@ -289,15 +335,24 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     </section>
     <section class="kpis" id="kpis" aria-label="Βασικοί δείκτες"></section>
     <div class="grid2">
-      <section class="card"><h2>Πωλήσεις ανά μήνα: φέτος έναντι πέρσι</h2><div class="chart-box"><canvas id="salesChart"></canvas></div></section>
-      <section class="card"><h2>Μεικτό κέρδος % ανά κατηγορία</h2><div class="chart-box"><canvas id="marginChart"></canvas></div></section>
+      <section class="card">
+        <div class="card-head"><h2 id="salesTitle">Πωλήσεις ανά μήνα</h2><div class="seg" id="ovMeasure"></div></div>
+        <div class="chart-box"><canvas id="salesChart"></canvas></div>
+        <p class="hint">Πατήστε σε έναν μήνα για να δείτε μόνο αυτόν.</p>
+      </section>
+      <section class="card">
+        <h2>Μεικτό κέρδος % ανά κατηγορία</h2>
+        <div class="chart-box"><canvas id="marginChart"></canvas></div>
+        <p class="hint">Πατήστε σε μια κατηγορία για να φιλτράρετε όλη τη σελίδα.</p>
+      </section>
     </div>
     <section class="card">
-      <h2>Κορυφαίοι πελάτες</h2>
-      <div class="scroll"><table>
-        <thead><tr><th>Πελάτης</th><th class="n">Πωλήσεις</th><th class="n">Μεταβολή</th><th class="n">Μ.Κ. %</th><th class="n">Υπόλοιπο</th><th class="n">Μέρες είσπραξης</th><th>Κατάσταση</th></tr></thead>
+      <div class="card-head"><h2>Πελάτες</h2><div class="seg" id="ovTop"><button type="button" data-top="10" aria-pressed="true">Top 10</button><button type="button" data-top="0" aria-pressed="false">Όλοι</button></div></div>
+      <div class="scroll"><table class="clickable">
+        <thead><tr><th data-cs="name">Πελάτης</th><th class="n" data-cs="s">Πωλήσεις</th><th class="n" data-cs="ch">Μεταβολή</th><th class="n" data-cs="m">Μ.Κ. %</th><th class="n" data-cs="bal">Υπόλοιπο</th><th class="n" data-cs="days">Μέρες είσπραξης</th><th>Κατάσταση</th></tr></thead>
         <tbody id="customers"></tbody>
       </table></div>
+      <p class="hint">Πατήστε έναν πελάτη για ανάλυση ανά κατηγορία και μήνα. Πατήστε μια επικεφαλίδα για ταξινόμηση.</p>
     </section>
     <div class="grid2">
       <section class="card">
@@ -329,8 +384,8 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
           <div class="dimlist" id="pvColsList"></div>
         </div>
         <div class="pv-block">
-          <label class="lbl" for="pvMeasure">Μέτρο</label>
-          <select id="pvMeasure"></select>
+          <span class="lbl">Μέτρα</span>
+          <div class="dimlist" id="pvMeasList"></div>
         </div>
         <div class="pv-block">
           <span class="lbl">Περίοδος</span>
@@ -350,12 +405,14 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
         <input type="text" id="pvName" placeholder="Όνομα αναφοράς για αποθήκευση">
         <button class="btn" id="pvSave" type="button">Αποθήκευση ως αναφορά</button>
         <button class="btn ghost" id="pvCsv" type="button">Εξαγωγή CSV</button>
+        <button class="btn ghost" id="pvPrint" type="button">Εκτύπωση</button>
         <button class="btn ghost" id="pvExpand" type="button">Άνοιγμα όλων</button>
         <button class="btn ghost" id="pvCollapse" type="button">Κλείσιμο όλων</button>
         <span class="sub" id="pvMsg" role="status"></span>
       </div>
       </div>
     </section>
+    <div id="printHead" class="print-only"></div>
     <div class="pv-wrap"><table class="pivot" id="pvTable"></table></div>
     <p class="sub">Πατήστε την επικεφαλίδα μιας στήλης για ταξινόμηση και μια γραμμή ομάδας για να ανοίξει ή να κλείσει.</p>
   </main>
@@ -508,83 +565,171 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   // ---------- Επισκόπηση ----------
   let charts = [];
   function sum(rows, f) { let s = 0; for (const r of rows) s += f(r); return s; }
+  const OV_DIMS = ["region", "salesperson", "customer_group", "category"];
+  const OV_PERIODS = [["ytd", "Φέτος"], ["l12", "Τελευταίοι 12 μήνες"], ["q", "Τρέχον τρίμηνο"], ["m", "Τελευταίος μήνας"]];
+  const OV_MEAS = [["net", "Πωλήσεις"], ["gross", "Μεικτό κέρδος"], ["qty", "Ποσότητα"]];
+  let ov = { period: "ytd", month: null, filters: {}, measure: "net", top: 10, cs: "s", dir: -1 };
+  let ovReady = false;
+  const addMonths = (m, n) => { const d = new Date(+m.slice(0, 4), +m.slice(5, 7) - 1 + n, 1); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+  const monthsBetween = (a, b) => { const out = []; for (let m = a; m <= b; m = addMonths(m, 1)) out.push(m); return out; };
+
+  function ovBase() {
+    const last = allMonths[allMonths.length - 1];
+    if (ov.period === "l12") return [addMonths(last, -11), last];
+    if (ov.period === "q") { const mm = +last.slice(5, 7), qs = Math.floor((mm - 1) / 3) * 3 + 1; return [last.slice(0, 5) + String(qs).padStart(2, "0"), last]; }
+    if (ov.period === "m") return [last, last];
+    return [last.slice(0, 4) + "-01", last];
+  }
+  function initOverview() {
+    if (ovReady) return; ovReady = true;
+    OV_DIMS.forEach(d => {
+      const vals = [...new Set(S.sales.map(r => r[d]))].sort((a, b) => a.localeCompare(b, "el"));
+      fillSelect($("ovf_" + d), [["", "Όλες"], ...vals.map(v => [v, v])], "");
+      $("ovf_" + d).addEventListener("change", e => { if (e.target.value) ov.filters[d] = e.target.value; else delete ov.filters[d]; renderOverview(); });
+    });
+    $("ovPeriods").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; ov.period = b.dataset.p; ov.month = null; renderOverview(); });
+    $("ovMeasure").innerHTML = OV_MEAS.map(([k, l]) => `<button type="button" data-m="${k}">${l}</button>`).join("");
+    $("ovMeasure").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (!b) return; ov.measure = b.dataset.m; renderOverview(); });
+    $("ovTop").addEventListener("click", e => { const b = e.target.closest("[data-top]"); if (!b) return; ov.top = +b.dataset.top; renderOverview(); });
+    $("ovClear").addEventListener("click", () => { ov.filters = {}; ov.month = null; OV_DIMS.forEach(d => { $("ovf_" + d).value = ""; }); renderOverview(); });
+    document.querySelector("#overview table.clickable thead").addEventListener("click", e => {
+      const th = e.target.closest("[data-cs]"); if (!th) return;
+      if (ov.cs === th.dataset.cs) ov.dir *= -1; else { ov.cs = th.dataset.cs; ov.dir = th.dataset.cs === "name" ? 1 : -1; }
+      renderOverview();
+    });
+    $("customers").addEventListener("click", e => {
+      const tr = e.target.closest("tr[data-c]"); if (!tr) return;
+      openPivotFrom({ rows: ["category"], cols: ["month"], measures: ["net", "gross"] }, tr.dataset.c, { customer: [tr.dataset.c] });
+    });
+    $("kpis").addEventListener("click", e => {
+      const k = e.target.closest("[data-kpi]"); if (!k) return;
+      if (k.dataset.kpi === "sales") openPivotFrom({ rows: ["customer"], cols: ["month"], measures: ["net"] }, "Πωλήσεις ανά πελάτη και μήνα");
+      if (k.dataset.kpi === "margin") openPivotFrom({ rows: ["category"], cols: [], measures: ["net", "gross", "margin_pct"] }, "Μεικτό κέρδος ανά κατηγορία");
+      if (k.dataset.kpi === "bal") { location.hash = "#assistant"; setTimeout(() => ask("Ποιοι χρωστάνε πάνω από 90 μέρες;"), 50); }
+      if (k.dataset.kpi === "stock") { location.hash = "#assistant"; setTimeout(() => ask("Ποια είδη δεν κινούνται;"), 50); }
+    });
+  }
+  function ovRange() { if (ov.month) return [ov.month, ov.month]; return ovBase(); }
+  function openPivotFrom(cfg, name, extraFilters) {
+    const [from, to] = ovRange();
+    const filters = {};
+    Object.entries(ov.filters).forEach(([k, v]) => { filters[k] = [v]; });
+    Object.assign(filters, extraFilters || {});
+    applyConfig({ ...cfg, from, to, filters }, name);
+    if (location.hash === "#pivot") route(); else location.hash = "#pivot";
+  }
+
   function renderOverview() {
-    const cy = S.curYear, py = String(+cy - 1), lm = S.lastMonth;
-    const inPeriod = (r, y) => r.year === y && +r.doc_date.slice(5, 7) <= lm;
-    const cur = S.sales.filter(r => inPeriod(r, cy)), prev = S.sales.filter(r => inPeriod(r, py));
+    initOverview();
+    const fe = Object.entries(ov.filters);
+    const pass = r => fe.every(([k, v]) => r[k] === v);
+    const [bf, bt] = ovBase(), [from, to] = ovRange();
+    const pf = addMonths(from, -12), pt = addMonths(to, -12);
+    const cur = S.sales.filter(r => r.month >= from && r.month <= to && pass(r));
+    const prev = S.sales.filter(r => r.month >= pf && r.month <= pt && pass(r));
     const sc = sum(cur, r => r.net), sp = sum(prev, r => r.net);
-    const mc = 100 * (1 - sum(cur, r => r.cost) / sc), mp = 100 * (1 - sum(prev, r => r.cost) / sp);
-    const bal = sum(S.balances, b => +b.balance), b90 = sum(S.balances, b => +b.d90p);
-    const stockVal = sum(S.stock, s => +s.value);
+    const mc = sc ? 100 * (1 - sum(cur, r => r.cost) / sc) : 0, mp = sp ? 100 * (1 - sum(prev, r => r.cost) / sp) : 0;
+
+    // υπόλοιπα και απόθεμα ακολουθούν τα φίλτρα όπου γίνεται
+    const custFilter = fe.length ? new Set(S.sales.filter(pass).map(r => r.customer)) : null;
+    const balances = custFilter ? S.balances.filter(b => custFilter.has(b.customer)) : S.balances;
+    const stock = ov.filters.category ? S.stock.filter(s => s.category === ov.filters.category) : S.stock;
+    const bal = sum(balances, b => +b.balance), b90 = sum(balances, b => +b.d90p);
+    const stockVal = sum(stock, s => +s.value);
     const cutoff = new Date(S.maxDate); cutoff.setDate(cutoff.getDate() - 90);
-    const slow = S.stock.filter(s => s.last_sale && new Date(s.last_sale) < cutoff).sort((a, b) => b.value - a.value);
+    const slow = stock.filter(s => s.last_sale && new Date(s.last_sale) < cutoff).sort((a, b) => b.value - a.value);
     const slowVal = sum(slow, s => +s.value);
 
-    $("periodText").textContent = `Περίοδος: Ιανουάριος – ${["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"][lm - 1]} ${cy}, σύγκριση με το ίδιο διάστημα ${py}.`;
+    // γραμμή επιλογών
+    $("ovPeriods").innerHTML = OV_PERIODS.map(([k, l]) => `<button type="button" class="qbtn" data-p="${k}" aria-pressed="${ov.period === k && !ov.month}">${l}</button>`).join("");
+    const lbl = from === to ? monthLabel(from) : `${monthLabel(from)} – ${monthLabel(to)}`;
+    const fdesc = fe.map(([k, v]) => `${DIMS[k]}: ${v}`).join(" · ");
+    $("periodText").textContent = `${lbl}${ov.month ? " (επιλεγμένος μήνας)" : ""} · σύγκριση με ${from === to ? monthLabel(pf) : monthLabel(pf) + " – " + monthLabel(pt)}${fdesc ? " · " + fdesc : ""}`;
+    $("ovClear").hidden = !fe.length && !ov.month;
+    document.querySelectorAll("#ovMeasure [data-m]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === ov.measure)));
+    document.querySelectorAll("#ovTop [data-top]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.top === ov.top)));
+    OV_DIMS.forEach(d => { $("ovf_" + d).value = ov.filters[d] || ""; });
+
     $("insightsDate").textContent = S.insights.length ? "Ενημέρωση: " + new Date(S.insights[0].created_at).toLocaleDateString("el-GR") : "";
     $("insights").innerHTML = S.insights.map(i => `
       <article class="insight ${esc(i.severity)}"><span class="tag">${esc(i.tag)}</span><strong>${esc(i.title)}</strong>
       <p>${esc(i.body)}</p><span class="act">${esc(i.action)}</span></article>`).join("") || '<p class="sub">Δεν υπάρχουν νέες παρατηρήσεις.</p>';
 
-    const md = mc - mp, sd = (sc / sp - 1) * 100, mdR = (Math.round(md * 10) / 10) || 0;
+    const md = mc - mp, sd = sp ? (sc / sp - 1) * 100 : 0, mdR = (Math.round(md * 10) / 10) || 0;
+    const prevLbl = "πέρσι";
     $("kpis").innerHTML = [
-      { l: "Πωλήσεις (καθαρή αξία)", v: eurK(sc), d: `${pct(sd)} έναντι ${py}`, c: sd >= 0 ? "up" : "down" },
-      { l: "Μεικτό κέρδος %", v: pct0(mc), d: `${mdR > 0 ? "+" : ""}${mdR.toLocaleString("el-GR")} μον. έναντι ${py}`, c: mdR > 0 ? "up" : mdR < 0 ? "down" : "flat" },
-      { l: "Ανοιχτά υπόλοιπα πελατών", v: eurK(bal), d: `${eurK(b90)} πάνω από 90 μέρες`, c: b90 > 0 ? "down" : "flat" },
-      { l: "Αξία αποθέματος", v: eurK(stockVal), d: `${eurK(slowVal)} χωρίς κίνηση 90+ ημερών`, c: slowVal > 0 ? "down" : "flat" }
-    ].map(k => `<div class="card kpi"><div class="label">${k.l}</div><div class="value">${k.v}</div><div class="delta ${k.c}">${k.d}</div></div>`).join("");
+      { k: "sales", l: "Πωλήσεις (καθαρή αξία)", v: eurK(sc), d: sp ? `${pct(sd)} έναντι ${prevLbl}` : "χωρίς στοιχεία σύγκρισης", c: !sp ? "flat" : sd >= 0 ? "up" : "down" },
+      { k: "margin", l: "Μεικτό κέρδος %", v: pct0(mc), d: sp ? `${mdR > 0 ? "+" : ""}${mdR.toLocaleString("el-GR")} μον. έναντι ${prevLbl}` : "χωρίς στοιχεία σύγκρισης", c: !sp ? "flat" : mdR > 0 ? "up" : mdR < 0 ? "down" : "flat" },
+      { k: "bal", l: "Ανοιχτά υπόλοιπα πελατών", v: eurK(bal), d: `${eurK(b90)} πάνω από 90 μέρες`, c: b90 > 0 ? "down" : "flat" },
+      { k: "stock", l: "Αξία αποθέματος", v: eurK(stockVal), d: `${eurK(slowVal)} χωρίς κίνηση 90+ ημερών`, c: slowVal > 0 ? "down" : "flat" }
+    ].map(k => `<button type="button" class="card kpi click" data-kpi="${k.k}"><span class="label">${k.l}</span><span class="value">${k.v}</span><span class="delta ${k.c}">${k.d}</span></button>`).join("");
 
     // πελάτες
     const by = (rows, key) => rows.reduce((m, r) => { (m[r[key]] = m[r[key]] || []).push(r); return m; }, {});
     const cc = by(cur, "customer"), pc = by(prev, "customer");
     const balMap = Object.fromEntries(S.balances.map(b => [b.customer, b]));
-    const custRows = Object.keys(cc).map(name => {
+    let custRows = Object.keys(cc).map(name => {
       const s = sum(cc[name], r => r.net), p = pc[name] ? sum(pc[name], r => r.net) : 0;
       const b = balMap[name] || {};
-      return { name, s, ch: p ? (s / p - 1) * 100 : 0, m: 100 * (1 - sum(cc[name], r => r.cost) / s), bal: +b.balance || 0, days: b.avg_days || 0 };
-    }).sort((a, b) => b.s - a.s).slice(0, 10);
+      return { name, s, ch: p ? (s / p - 1) * 100 : 0, m: s ? 100 * (1 - sum(cc[name], r => r.cost) / s) : 0, bal: +b.balance || 0, days: b.avg_days || 0 };
+    });
+    custRows.sort((a, b) => ov.cs === "name" ? ov.dir * a.name.localeCompare(b.name, "el") : ov.dir * (a[ov.cs] - b[ov.cs]));
+    if (ov.top) custRows = custRows.slice(0, ov.top);
+    document.querySelectorAll("#overview [data-cs]").forEach(th => th.classList.toggle("sorted", th.dataset.cs === ov.cs));
     $("customers").innerHTML = custRows.map(x => {
       const st = x.days > 90 ? ["bad", "Καθυστέρηση"] : x.ch < -8 ? ["warn", "Μειώνει αγορές"] : x.ch > 10 ? ["good", "Αναπτύσσεται"] : ["good", "Κανονικά"];
-      return `<tr><td>${esc(x.name)}</td><td class="n">${eur.format(x.s)}</td><td class="n ${x.ch >= 0 ? "up" : "down"}">${pct(x.ch)}</td>
+      return `<tr data-c="${esc(x.name)}" tabindex="0"><td>${esc(x.name)}</td><td class="n">${eur.format(x.s)}</td><td class="n ${x.ch >= 0 ? "up" : "down"}">${pct(x.ch)}</td>
         <td class="n">${pct0(x.m)}</td><td class="n">${eur.format(x.bal)}</td><td class="n">${x.days}</td><td><span class="chip ${st[0]}">${st[1]}</span></td></tr>`;
-    }).join("");
+    }).join("") || '<tr><td colspan="7" class="sub">Δεν υπάρχουν πωλήσεις για αυτές τις επιλογές.</td></tr>';
     $("slow").innerHTML = slow.map(s => `<tr><td>${esc(s.item)}</td><td class="n">${nf0.format(s.qty)}</td><td class="n">${eur.format(s.value)}</td><td class="n">${fmtDate(s.last_sale)}</td></tr>`).join("")
       || '<tr><td colspan="4" class="sub">Κανένα είδος.</td></tr>';
 
     // γραφήματα
     charts.forEach(c => c.destroy()); charts = [];
-    const ink = css("--muted"), line = css("--line"), accent = css("--accent");
+    const ink = css("--muted"), line = css("--line"), accent = css("--accent"), soft = css("--accent-soft");
     Chart.defaults.color = ink; Chart.defaults.font = { family: css("--font"), size: 12 };
     const grid = { color: line, drawTicks: false };
-    const months = Array.from({ length: lm }, (_, i) => i + 1);
-    const mSum = (rows, m) => sum(rows.filter(r => +r.doc_date.slice(5, 7) === m), r => r.net);
+    const meas = MEASURES[ov.measure], mlabel = OV_MEAS.find(x => x[0] === ov.measure)[1];
+    $("salesTitle").textContent = `${mlabel} ανά μήνα έναντι πέρσι`;
+    const baseMonths = monthsBetween(bf, bt);
+    const allCur = S.sales.filter(r => r.month >= bf && r.month <= bt && pass(r));
+    const allPrev = S.sales.filter(r => r.month >= addMonths(bf, -12) && r.month <= addMonths(bt, -12) && pass(r));
+    const mVal = (rows, m) => { const c = { net: 0, cost: 0, qty: 0 }; for (const r of rows) if (r.month === m) { c.net += r.net; c.cost += r.cost; c.qty += r.qty; } return meas[1](c); };
+    const fmtTick = v => ov.measure === "qty" ? nf0.format(v) : nf0.format(v / 1000) + "k";
     charts.push(new Chart($("salesChart"), {
       type: "bar",
-      data: { labels: months.map(m => MONTHS[m - 1]), datasets: [
-        { label: cy, data: months.map(m => mSum(cur, m)), backgroundColor: accent, borderRadius: 4, maxBarThickness: 34 },
-        { type: "line", label: py, data: months.map(m => mSum(prev, m)), borderColor: ink, backgroundColor: ink, borderDash: [5, 4], pointRadius: 3, tension: .3 }
+      data: { labels: baseMonths.map(monthLabel), datasets: [
+        { label: "Επιλεγμένη περίοδος", data: baseMonths.map(m => mVal(allCur, m)), backgroundColor: baseMonths.map(m => !ov.month || ov.month === m ? accent : soft), borderRadius: 4, maxBarThickness: 34 },
+        { type: "line", label: "Πέρσι", data: baseMonths.map(m => mVal(allPrev, addMonths(m, -12))), borderColor: ink, backgroundColor: ink, borderDash: [5, 4], pointRadius: 3, tension: .3 }
       ] },
       options: { maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${eur.format(c.parsed.y)}` } } },
-        scales: { x: { grid: { display: false } }, y: { grid, border: { display: false }, ticks: { callback: v => nf0.format(v / 1000) + "k" } } } }
+        onClick: (_e, els) => { if (!els.length) return; const m = baseMonths[els[0].index]; ov.month = ov.month === m ? null : m; renderOverview(); },
+        onHover: (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; },
+        plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${meas[2](c.parsed.y)}` } } },
+        scales: { x: { grid: { display: false } }, y: { grid, border: { display: false }, ticks: { callback: fmtTick } } } }
     }));
-    const catC = by(cur, "category"), catP = by(prev, "category");
+    const catRows = S.sales.filter(r => r.month >= from && r.month <= to && Object.entries(ov.filters).every(([k, v]) => k === "category" || r[k] === v));
+    const catPrevRows = S.sales.filter(r => r.month >= pf && r.month <= pt && Object.entries(ov.filters).every(([k, v]) => k === "category" || r[k] === v));
+    const catC = by(catRows, "category"), catP = by(catPrevRows, "category");
     const cats = Object.keys(catC).map(k => ({ k, m: 100 * (1 - sum(catC[k], r => r.cost) / sum(catC[k], r => r.net)),
       p: catP[k] ? 100 * (1 - sum(catP[k], r => r.cost) / sum(catP[k], r => r.net)) : 0 })).sort((a, b) => b.m - a.m);
+    const selCat = ov.filters.category;
     charts.push(new Chart($("marginChart"), {
       type: "bar",
       data: { labels: cats.map(c => c.k), datasets: [
-        { label: cy, data: cats.map(c => c.m), backgroundColor: cats.map(c => c.m - c.p < -1 ? css("--bad") : accent), borderRadius: 4, barThickness: 14 },
-        { label: py, data: cats.map(c => c.p), backgroundColor: line, borderRadius: 4, barThickness: 14 }
+        { label: "Επιλεγμένη περίοδος", data: cats.map(c => c.m), backgroundColor: cats.map(c => selCat && selCat !== c.k ? soft : c.m - c.p < -1 ? css("--bad") : accent), borderRadius: 4, barThickness: 14 },
+        { label: "Πέρσι", data: cats.map(c => c.p), backgroundColor: line, borderRadius: 4, barThickness: 14 }
       ] },
       options: { indexAxis: "y", maintainAspectRatio: false,
+        onClick: (_e, els) => { if (!els.length) return; const k = cats[els[0].index].k; if (ov.filters.category === k) delete ov.filters.category; else ov.filters.category = k; renderOverview(); },
+        onHover: (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; },
         plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct0(c.parsed.x)}` } } },
         scales: { x: { grid, border: { display: false }, min: 0, ticks: { callback: v => v + "%" } }, y: { grid: { display: false } } } }
     }));
     const ag = [["0–30", "d0_30"], ["31–60", "d31_60"], ["61–90", "d61_90"], ["90+", "d90p"]];
     charts.push(new Chart($("agingChart"), {
       type: "bar",
-      data: { labels: ag.map(a => a[0] + " μέρες"), datasets: [{ data: ag.map(a => sum(S.balances, b => +b[a[1]])),
+      data: { labels: ag.map(a => a[0] + " μέρες"), datasets: [{ data: ag.map(a => sum(balances, b => +b[a[1]])),
         backgroundColor: [css("--good"), accent, css("--warn"), css("--bad")], borderRadius: 4, maxBarThickness: 48 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => eur.format(c.parsed.y) } } },
         scales: { x: { grid: { display: false } }, y: { grid, border: { display: false }, ticks: { callback: v => nf0.format(v / 1000) + "k" } } } }
@@ -630,20 +775,30 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     return {
       rows: arr(c.rows).length ? arr(c.rows) : ["customer"],
       cols: arr(c.cols),
-      measure: MEASURES[c.measure] ? c.measure : "net",
+      measures: (() => { const m = (Array.isArray(c.measures) ? c.measures : [c.measure]).filter(x => MEASURES[x]); return m.length ? [...new Set(m)] : ["net"]; })(),
       from: from || allMonths[0], to: to || allMonths[allMonths.length - 1],
-      filters, sortCol: TOT
+      filters, sortCol: TOT + "\u0003" + "0"
     };
   }
 
   function initPivot() {
     allMonths = [...new Set(S.sales.map(r => r.month))].sort();
-    pv = normalize({ rows: ["customer"], cols: ["quarter"], measure: "net", year: S.curYear });
-    fillSelect($("pvMeasure"), Object.entries(MEASURES).map(([k, v]) => [k, v[0]]), pv.measure);
+    pv = normalize({ rows: ["customer"], cols: ["quarter"], measures: ["net"], year: S.curYear });
     const mopts = allMonths.map(m => [m, monthLabel(m)]);
     fillSelect($("pvFrom"), mopts, pv.from);
     fillSelect($("pvTo"), mopts, pv.to);
-    $("pvMeasure").addEventListener("change", () => { pv.measure = $("pvMeasure").value; renderPivot(); });
+    $("pvMeasList").addEventListener("click", e => {
+      const b = e.target.closest("button[data-act]"); if (!b) return;
+      const i = +b.closest(".dchip").dataset.i, L = pv.measures;
+      if (b.dataset.act === "del" && L.length > 1) L.splice(i, 1);
+      if (b.dataset.act === "left") [L[i - 1], L[i]] = [L[i], L[i - 1]];
+      if (b.dataset.act === "right") [L[i + 1], L[i]] = [L[i], L[i + 1]];
+      pv.sortCol = TOT + "\u0003" + "0"; syncControls(); renderPivot();
+    });
+    $("pvMeasList").addEventListener("change", e => {
+      if (!e.target.matches("select.add") || !e.target.value) return;
+      pv.measures.push(e.target.value); syncControls(); renderPivot();
+    });
     $("pvFrom").addEventListener("change", () => { pv.from = $("pvFrom").value; if (pv.to < pv.from) pv.to = pv.from; syncControls(); renderPivot(); });
     $("pvTo").addEventListener("change", () => { pv.to = $("pvTo").value; if (pv.from > pv.to) pv.from = pv.to; syncControls(); renderPivot(); });
     $("pvToggle").addEventListener("click", () => {
@@ -653,6 +808,10 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     });
     $("pvSave").addEventListener("click", saveReport);
     $("pvCsv").addEventListener("click", exportCsv);
+    $("pvPrint").addEventListener("click", () => {
+      $("printHead").innerHTML = `<h1>${esc($("pvTitle").textContent)}</h1><p>${esc(S.tenant.name)} · ${esc(describe(currentConfig()))} · Εκτύπωση: ${new Date().toLocaleString("el-GR")}</p>`;
+      window.print();
+    });
     $("pvExpand").addEventListener("click", () => { collapsed.clear(); renderPivot(); });
     $("pvCollapse").addEventListener("click", () => { collapsed = new Set(lastGrid ? lastGrid.groupPaths : []); renderPivot(); });
     ["pvRowsList", "pvColsList"].forEach(id => $(id).addEventListener("click", onDimClick));
@@ -689,13 +848,13 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     if (b.dataset.act === "del") list.splice(i, 1);
     if (b.dataset.act === "left") [list[i - 1], list[i]] = [list[i], list[i - 1]];
     if (b.dataset.act === "right") [list[i + 1], list[i]] = [list[i], list[i + 1]];
-    collapsed.clear(); pv.sortCol = TOT;
+    collapsed.clear(); pv.sortCol = TOT + "\u0003" + "0";
     syncControls(); renderPivot();
   }
   function onDimAdd(e) {
     if (!e.target.matches("select.add") || !e.target.value) return;
     (e.currentTarget.id === "pvRowsList" ? pv.rows : pv.cols).push(e.target.value);
-    collapsed.clear(); pv.sortCol = TOT;
+    collapsed.clear(); pv.sortCol = TOT + "\u0003" + "0";
     syncControls(); renderPivot();
   }
 
@@ -770,7 +929,12 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   function syncControls() {
     renderDimList("pvRowsList", pv.rows);
     renderDimList("pvColsList", pv.cols);
-    $("pvMeasure").value = pv.measure;
+    $("pvMeasList").innerHTML = pv.measures.map((m, i, L) => `
+      <span class="dchip" data-i="${i}"><span class="ord">${L.length > 1 ? i + 1 + "." : ""}</span>${esc(MEASURES[m][0])}
+        ${i > 0 ? `<button type="button" data-act="left" aria-label="Μετακίνηση πριν">‹</button>` : ""}
+        ${i < L.length - 1 ? `<button type="button" data-act="right" aria-label="Μετακίνηση μετά">›</button>` : ""}
+        ${L.length > 1 ? `<button type="button" data-act="del" aria-label="Αφαίρεση">×</button>` : ""}
+      </span>`).join("") + (pv.measures.length < 4 ? `<select class="add" aria-label="Προσθήκη μέτρου"><option value="">+ Προσθήκη</option>${Object.entries(MEASURES).filter(([k]) => !pv.measures.includes(k)).map(([k, v]) => `<option value="${k}">${esc(v[0])}</option>`).join("")}</select>` : "");
     $("pvFrom").value = pv.from; $("pvTo").value = pv.to;
     $("pvQuick").innerHTML = quickRanges().map(([k, l, f, t]) =>
       `<button type="button" class="qbtn" data-q="${k}" aria-pressed="${pv.from === f && pv.to === t}">${l}</button>`).join("");
@@ -807,81 +971,109 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     }
     const cmp = (a, b) => { for (let i = 0; i < a.length; i++) { const c = a[i].localeCompare(b[i], "el"); if (c) return c; } return 0; };
     const colKeys = [...colSet.entries()].sort((a, b) => cmp(a[1], b[1]));
-    const f = MEASURES[pv.measure][1];
     const val = (path, ck) => agg.get(path + CSEP + ck);
     const groupPaths = [];
     (function walk(prefix, level) {
       if (level >= pv.rows.length - 1) return;
       for (const v of children.get(prefix) || []) { const p = prefix === "" ? v : prefix + SEP + v; groupPaths.push(p); walk(p, level + 1); }
     })("", 0);
-    return { rows, agg, children, colKeys, f, fmt: MEASURES[pv.measure][2], val, groupPaths };
+    return { rows, agg, children, colKeys, val, groupPaths };
   }
+
+  const MSEP = "\u0003";
+  const sortKey = (ck, mi) => ck + MSEP + mi;
+  function parseSort() { const [ck, mi] = String(pv.sortCol).split(MSEP); return { ck, m: pv.measures[+mi || 0] || pv.measures[0] }; }
 
   function sortedChildren(g, prefix) {
     const kids = [...(g.children.get(prefix) || [])];
     const path = v => prefix === "" ? v : prefix + SEP + v;
     if (pv.sortCol === "__name") return kids.sort((a, b) => a.localeCompare(b, "el"));
-    return kids.sort((a, b) => g.f(g.val(path(b), pv.sortCol) || ZERO) - g.f(g.val(path(a), pv.sortCol) || ZERO));
+    const { ck, m } = parseSort(); const f = MEASURES[m][1];
+    return kids.sort((a, b) => f(g.val(path(b), ck) || ZERO) - f(g.val(path(a), ck) || ZERO));
   }
 
   function renderPivot() {
     if (!S || !pv) return;
     const g = lastGrid = buildGrid();
-    const nC = pv.cols.length, nR = pv.rows.length;
-    // κλίμακα χρώματος από τα κελιά του τελευταίου επιπέδου
-    let max = 1;
-    if (nC && pv.measure !== "margin_pct") {
-      for (const [k, c] of g.agg) { const [p, ck] = k.split(CSEP); if (ck !== TOT && p.split(SEP).length === nR && p !== "") max = Math.max(max, Math.abs(g.f(c))); }
+    const nC = pv.cols.length, nR = pv.rows.length, ms = pv.measures, nM = ms.length;
+    const multiM = nM > 1;
+    // κλίμακα χρώματος ανά μέτρο, από τα κελιά του τελευταίου επιπέδου
+    const max = {};
+    ms.forEach(m => { max[m] = 1; });
+    if (nC) for (const [k, c] of g.agg) {
+      const [p, ck] = k.split(CSEP);
+      if (ck !== TOT && p !== "" && p.split(SEP).length === nR) ms.forEach(m => { max[m] = Math.max(max[m], Math.abs(MEASURES[m][1](c))); });
     }
-    const shade = v => (!nC || pv.measure === "margin_pct") ? "" :
-      ` style="background: color-mix(in srgb, var(--accent) ${Math.round(Math.min(1, Math.abs(v) / max) * 28)}%, transparent)"`;
+    const shade = (m, v) => (!nC || m === "margin_pct") ? "" :
+      ` style="background: color-mix(in srgb, var(--accent) ${Math.round(Math.min(1, Math.abs(v) / max[m]) * 28)}%, transparent)"`;
+    const sorted = k => pv.sortCol === k ? "sorted" : "";
 
-    // επικεφαλίδες
+    // επικεφαλίδες: επίπεδα στηλών + (αν είναι πολλά μέτρα) μία γραμμή με τα μέτρα
+    const levels = nC + (multiM ? 1 : 0) || 1;
     let head = "<thead>";
-    const rowHead = `<th rowspan="${Math.max(1, nC)}" data-sort="__name" class="${pv.sortCol === "__name" ? "sorted" : ""}">${esc(pv.rows.map(d => DIMS[d]).join(" › "))}</th>`;
+    const rowHead = `<th rowspan="${levels}" data-sort="__name" class="${sorted("__name")}">${esc(pv.rows.map(d => DIMS[d]).join(" › "))}</th>`;
+    const mHeads = ck => ms.map((m, mi) => `<th class="n ${sorted(sortKey(ck, mi))}" data-sort="${esc(sortKey(ck, mi))}">${esc(MEASURES[m][0])}</th>`).join("");
     if (!nC) {
-      head += `<tr>${rowHead}<th class="n ${pv.sortCol === TOT ? "sorted" : ""}" data-sort="${TOT}">Σύνολο</th></tr>`;
+      head += multiM
+        ? `<tr>${rowHead}${mHeads(TOT)}</tr>`
+        : `<tr>${rowHead}<th class="n ${sorted(sortKey(TOT, 0))}" data-sort="${esc(sortKey(TOT, 0))}">${esc(MEASURES[ms[0]][0])}</th></tr>`;
     } else {
       for (let lvl = 0; lvl < nC; lvl++) {
         head += "<tr>" + (lvl === 0 ? rowHead : "");
-        if (lvl < nC - 1) {
+        const lastLvl = lvl === nC - 1;
+        if (!lastLvl || multiM) {
           let i = 0;
           while (i < g.colKeys.length) {
             const key = g.colKeys[i][1].slice(0, lvl + 1).join(SEP);
             let span = 0;
             while (i + span < g.colKeys.length && g.colKeys[i + span][1].slice(0, lvl + 1).join(SEP) === key) span++;
-            head += `<th colspan="${span}">${esc(dimLabel(pv.cols[lvl], g.colKeys[i][1][lvl]))}</th>`;
+            head += `<th colspan="${span * nM}">${esc(dimLabel(pv.cols[lvl], g.colKeys[i][1][lvl]))}</th>`;
             i += span;
           }
         } else {
-          head += g.colKeys.map(([ck, parts]) => `<th class="n ${pv.sortCol === ck ? "sorted" : ""}" data-sort="${esc(ck)}">${esc(dimLabel(pv.cols[lvl], parts[lvl]))}</th>`).join("");
+          head += g.colKeys.map(([ck, parts]) => `<th class="n ${sorted(sortKey(ck, 0))}" data-sort="${esc(sortKey(ck, 0))}">${esc(dimLabel(pv.cols[lvl], parts[lvl]))}</th>`).join("");
         }
-        if (lvl === 0) head += `<th rowspan="${nC}" class="n ${pv.sortCol === TOT ? "sorted" : ""}" data-sort="${TOT}">Σύνολο</th>`;
+        if (lvl === 0) head += multiM
+          ? `<th colspan="${nM}" rowspan="${nC}">Σύνολο</th>`
+          : `<th rowspan="${nC}" class="n ${sorted(sortKey(TOT, 0))}" data-sort="${esc(sortKey(TOT, 0))}">Σύνολο</th>`;
         head += "</tr>";
       }
+      if (multiM) head += "<tr>" + g.colKeys.map(([ck]) => mHeads(ck)).join("") + mHeads(TOT) + "</tr>";
     }
     head += "</thead>";
 
     // σώμα
+    const cellsFor = (path, withShade) => {
+      let h = "";
+      for (const [ck] of g.colKeys) {
+        const c = g.val(path, ck);
+        for (const m of ms) {
+          if (!c) { h += '<td class="n"></td>'; continue; }
+          const v = MEASURES[m][1](c);
+          h += `<td class="n"${withShade ? shade(m, v) : ""}>${MEASURES[m][2](v)}</td>`;
+        }
+      }
+      return h;
+    };
+    const totsFor = path => ms.map(m => `<td class="n tot">${MEASURES[m][2](MEASURES[m][1](g.val(path, TOT) || ZERO))}</td>`).join("");
     const out = [];
-    const cellsFor = path => g.colKeys.map(([ck]) => { const c = g.val(path, ck); if (!c) return '<td class="n"></td>'; const v = g.f(c); return `<td class="n"${shade(v)}>${g.fmt(v)}</td>`; }).join("");
     (function walk(prefix, level) {
       for (const v of sortedChildren(g, prefix)) {
         const path = prefix === "" ? v : prefix + SEP + v;
         const indent = `padding-left:${8 + level * 18}px`;
-        const tot = g.f(g.val(path, TOT) || ZERO);
         if (level < nR - 1) {
           const open = !collapsed.has(path);
           const n = (g.children.get(path) || new Set()).size;
-          out.push(`<tr class="grp" data-path="${esc(path)}"><td style="${indent}"><span class="tg">${open ? "▾" : "▸"}</span>${esc(dimLabel(pv.rows[level], v))} <span class="cnt">(${n})</span></td>${nC ? cellsFor(path).replace(/ style="[^"]*"/g, "") : ""}<td class="n tot">${g.fmt(tot)}</td></tr>`);
+          out.push(`<tr class="grp" data-path="${esc(path)}"><td style="${indent}"><span class="tg">${open ? "▾" : "▸"}</span>${esc(dimLabel(pv.rows[level], v))} <span class="cnt">(${n})</span></td>${cellsFor(path, false)}${totsFor(path)}</tr>`);
           if (open) walk(path, level + 1);
         } else {
-          out.push(`<tr><td style="${indent}">${esc(dimLabel(pv.rows[level], v))}</td>${nC ? cellsFor(path) : ""}<td class="n tot">${g.fmt(tot)}</td></tr>`);
+          out.push(`<tr><td style="${indent}">${esc(dimLabel(pv.rows[level], v))}</td>${cellsFor(path, true)}${totsFor(path)}</tr>`);
         }
       }
     })("", 0);
-    const grand = `<tr class="total"><td>Σύνολο</td>${g.colKeys.map(([ck]) => `<td class="n">${g.fmt(g.f(g.val("", ck) || ZERO))}</td>`).join("")}<td class="n">${g.fmt(g.f(g.val("", TOT) || ZERO))}</td></tr>`;
-    $("pvTable").innerHTML = head + "<tbody>" + (out.length ? out.join("") + grand : `<tr><td colspan="${g.colKeys.length + 2}" class="sub">Δεν υπάρχουν δεδομένα για αυτά τα φίλτρα.</td></tr>`) + "</tbody>";
+    const grand = `<tr class="total"><td>Σύνολο</td>${g.colKeys.map(([ck]) => ms.map(m => `<td class="n">${MEASURES[m][2](MEASURES[m][1](g.val("", ck) || ZERO))}</td>`).join("")).join("")}${ms.map(m => `<td class="n">${MEASURES[m][2](MEASURES[m][1](g.val("", TOT) || ZERO))}</td>`).join("")}</tr>`;
+    const colspan = 1 + (g.colKeys.length + 1) * nM;
+    $("pvTable").innerHTML = head + "<tbody>" + (out.length ? out.join("") + grand : `<tr><td colspan="${colspan}" class="sub">Δεν υπάρχουν δεδομένα για αυτά τα φίλτρα.</td></tr>`) + "</tbody>";
   }
 
   $("pvTable").addEventListener("click", e => {
@@ -896,7 +1088,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   });
 
   function currentConfig() {
-    return { rows: [...pv.rows], cols: [...pv.cols], measure: pv.measure, from: pv.from, to: pv.to, filters: JSON.parse(JSON.stringify(pv.filters)) };
+    return { rows: [...pv.rows], cols: [...pv.cols], measures: [...pv.measures], from: pv.from, to: pv.to, filters: JSON.parse(JSON.stringify(pv.filters)) };
   }
   async function saveReport() {
     const name = $("pvName").value.trim();
@@ -911,16 +1103,22 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   }
   function exportCsv() {
     const g = lastGrid || buildGrid();
+    const ms = pv.measures;
     const q = s => `"${String(s).replace(/"/g, '""')}"`;
     const num = v => (Math.round(v * 100) / 100).toString().replace(".", ",");
-    const colHead = g.colKeys.map(([, parts]) => parts.map((p, i) => dimLabel(pv.cols[i], p)).join(" / "));
-    const lines = [[...pv.rows.map(d => DIMS[d]), ...colHead, "Σύνολο"].map(q).join(";")];
+    const colHead = [];
+    g.colKeys.forEach(([, parts]) => ms.forEach(m => colHead.push([...parts.map((p, i) => dimLabel(pv.cols[i], p)), ms.length > 1 || !parts.length ? MEASURES[m][0] : ""].filter(Boolean).join(" / "))));
+    ms.forEach(m => colHead.push(ms.length > 1 ? "Σύνολο / " + MEASURES[m][0] : (g.colKeys.length ? "Σύνολο" : MEASURES[m][0])));
+    const lines = [[...pv.rows.map(d => DIMS[d]), ...colHead].map(q).join(";")];
     (function walk(prefix, level, labels) {
       for (const v of sortedChildren(g, prefix)) {
         const path = prefix === "" ? v : prefix + SEP + v;
         const lab = [...labels, dimLabel(pv.rows[level], v)];
-        if (level < pv.rows.length - 1) walk(path, level + 1, lab);
-        else lines.push([...lab.map(q), ...g.colKeys.map(([ck]) => { const c = g.val(path, ck); return c ? num(g.f(c)) : ""; }), num(g.f(g.val(path, TOT)))].join(";"));
+        if (level < pv.rows.length - 1) { walk(path, level + 1, lab); continue; }
+        const cells = [];
+        g.colKeys.forEach(([ck]) => { const c = g.val(path, ck); ms.forEach(m => cells.push(c ? num(MEASURES[m][1](c)) : "")); });
+        ms.forEach(m => cells.push(num(MEASURES[m][1](g.val(path, TOT) || ZERO))));
+        lines.push([...lab.map(q), ...cells].join(";"));
       }
     })("", 0, []);
     const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -933,7 +1131,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   function describe(raw) {
     const c = normalize(raw);
     const f = Object.entries(c.filters).map(([k, v]) => `${DIMS[k]}: ${v.length === 1 ? v[0] : v.length + " τιμές"}`).join(", ");
-    return `${c.rows.map(d => DIMS[d]).join(" › ")} × ${c.cols.length ? c.cols.map(d => DIMS[d]).join(" › ") : "—"} · ${MEASURES[c.measure][0]}` +
+    return `${c.rows.map(d => DIMS[d]).join(" › ")} × ${c.cols.length ? c.cols.map(d => DIMS[d]).join(" › ") : "—"} · ${c.measures.map(m => MEASURES[m][0]).join(" + ")}` +
       ` · ${monthLabel(c.from)} – ${monthLabel(c.to)}${f ? " · " + f : ""}`;
   }
   function renderReports() {
@@ -1043,6 +1241,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   function addMsg(h) { $("chatMsgs").insertAdjacentHTML("beforeend", h); $("chatMsgs").scrollTop = $("chatMsgs").scrollHeight; }
 
   async function ask(q) {
+    initChat();
     userSay(q);
     chatHistory.push({ role: "user", content: q });
     // 1. Δοκιμή AI (Edge Function «ask»), αν έχει ενεργοποιηθεί
