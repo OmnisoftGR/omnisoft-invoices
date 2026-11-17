@@ -3,5 +3,5 @@
 // την ελέγχει η Row Level Security της βάσης, όχι το key.
 window.OMNI_CONFIG = {
   url: "https://pthafsgdkgsrwritumxl.supabase.co",
-  key: "ΒΑΛΤΕ_ΕΔΩ_ΤΟ_PUBLISHABLE_KEY"
+  key: "sb_publishable_Jwr8mx3w9khJ2WbYlZTpMg_vitENtuw"
 };
