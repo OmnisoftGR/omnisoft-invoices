@@ -356,6 +356,33 @@ select.add-rule { width: auto; max-width: 100%; border: 1px dashed var(--accent)
   nav.tabs a .badge { margin-left: 2px; min-width: 15px; font-size: 10px; line-height: 15px; padding: 0 3px; }
 }
 
+/* Pivot: μεγαλύτερα κουμπιά στα chips */
+#pivot .dchip { font-size: 14px; padding: 4px 4px 4px 12px; gap: 2px; min-height: 34px; }
+#pivot .dchip .ord { font-size: 12px; margin-right: 4px; }
+#pivot .dchip button {
+  width: 28px; height: 28px; padding: 0; display: inline-grid; place-items: center;
+  font-size: 18px; line-height: 1; border-radius: 50%; color: var(--accent);
+}
+#pivot .dchip button:hover { background: var(--surface); }
+#pivot .dchip button[data-act="del"] { font-size: 20px; color: var(--muted); }
+#pivot .dchip button[data-act="del"]:hover { color: var(--bad); background: var(--bad-soft); }
+#pivot select.add { padding: 6px 14px; font-size: 14px; min-height: 34px; }
+#pivot .zone select.add { width: 132px; }
+#pivot #pvAddFilter { width: 104px; }
+#pivot .fchip { font-size: 14px; padding: 3px 4px 3px 12px; min-height: 34px; }
+#pivot .fchip .open { font-size: 14px; }
+#pivot .fchip .x { width: 28px; height: 28px; padding: 0; display: inline-grid; place-items: center; font-size: 20px; border-radius: 50%; }
+#pivot .fchip .x:hover { color: var(--bad); background: var(--bad-soft); }
+#pivot .qbtn { padding: 6px 14px; font-size: 13.5px; }
+#pivot .quick .qbtn { padding: 5px 12px; }
+#pivot .seg button { padding: 8px 16px; font-size: 14px; }
+#pivot .periods select, #pvTopN { padding: 6px 10px; font-size: 14px; }
+#pivot .chk input { width: 18px; height: 18px; }
+@media (pointer: coarse) {
+  #pivot .dchip button, #pivot .fchip .x { width: 34px; height: 34px; }
+  #pivot .dchip, #pivot .fchip, #pivot select.add { min-height: 40px; }
+}
+
 /* Reports */
 .reports { display: grid; gap: 10px; }
 .report { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
