@@ -271,6 +271,38 @@ table.clickable thead th { cursor: pointer; }
   .report .btn { flex: 1; }
 }
 
+
+/* Pivot: ρυθμίσεις (τελικό στυλ) */
+#pivot .pv-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+#pivot .zone { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); gap: 8px; }
+#pivot .pv-block > .lbl { display: flex; align-items: center; gap: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+#pivot .ico { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-size: 11px; text-transform: none; }
+#pivot .dimlist { min-height: 30px; gap: 6px; }
+#pivot select.add {
+  -webkit-appearance: none; appearance: none; width: auto; min-width: 0;
+  border: 1px dashed var(--accent); background: transparent; color: var(--accent);
+  border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+#pivot select.add:hover { background: var(--accent-soft); }
+#pivot .zone select.add { width: 118px; }
+#pivot #pvAddFilter { width: 92px; }
+#pivot .pv-grid2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 10px 24px; margin-top: 14px; align-items: start; }
+#pivot .periods { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#pivot .periods select { padding: 4px 8px; font-size: 13px; }
+#pivot .quick { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: 6px; }
+#pivot .quick .qbtn { padding: 3px 10px; }
+#pivot .pv-actions { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+#pivot .pv-actions input { max-width: 340px; }
+@media (max-width: 1024px) {
+  #pivot .pv-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #pivot .pv-grid2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  #pivot .pv-grid { grid-template-columns: 1fr; }
+  #pivot .quick { margin-left: 0; }
+  #pivot .pv-actions input { max-width: none; }
+}
+
 /* Reports */
 .reports { display: grid; gap: 10px; }
 .report { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -375,31 +407,34 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
       </div>
       <div class="pv-body">
       <div class="pv-grid">
-        <div class="pv-block">
-          <span class="lbl">Γραμμές (με τη σειρά ομαδοποίησης)</span>
+        <div class="pv-block zone">
+          <span class="lbl"><span class="ico" aria-hidden="true">≡</span>Γραμμές</span>
           <div class="dimlist" id="pvRowsList"></div>
         </div>
-        <div class="pv-block">
-          <span class="lbl">Στήλες</span>
+        <div class="pv-block zone">
+          <span class="lbl"><span class="ico" aria-hidden="true">⫴</span>Στήλες</span>
           <div class="dimlist" id="pvColsList"></div>
         </div>
-        <div class="pv-block">
-          <span class="lbl">Μέτρα</span>
+        <div class="pv-block zone">
+          <span class="lbl"><span class="ico" aria-hidden="true">Σ</span>Μέτρα</span>
           <div class="dimlist" id="pvMeasList"></div>
         </div>
+      </div>
+      <div class="pv-grid2">
         <div class="pv-block">
           <span class="lbl">Περίοδος</span>
           <div class="periods">
-            <label class="sub" for="pvFrom">Από</label><select id="pvFrom"></select>
-            <label class="sub" for="pvTo">Έως</label><select id="pvTo"></select>
+            <select id="pvFrom" aria-label="Από μήνα"></select>
+            <span class="sub">έως</span>
+            <select id="pvTo" aria-label="Έως μήνα"></select>
+            <div class="quick" id="pvQuick"></div>
           </div>
-          <div class="periods" id="pvQuick"></div>
         </div>
-      </div>
-      <div class="pv-block" style="margin-top:14px">
-        <span class="lbl">Φίλτρα</span>
-        <div class="dimlist" id="pvFilters"></div>
-        <div id="pvFilterPanel"></div>
+        <div class="pv-block">
+          <span class="lbl">Φίλτρα</span>
+          <div class="dimlist" id="pvFilters"></div>
+          <div id="pvFilterPanel"></div>
+        </div>
       </div>
       <div class="pv-actions">
         <input type="text" id="pvName" placeholder="Όνομα αναφοράς για αποθήκευση">
