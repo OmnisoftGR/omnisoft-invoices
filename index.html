@@ -101,6 +101,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; p
 td { padding: 7px 8px; border-bottom: 1px solid var(--line); }
 tr:last-child td { border-bottom: 0; }
 th.n, td.n { text-align: right; }
+td.n { white-space: nowrap; }
 .scroll { overflow-x: auto; }
 .chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .chip.good { background: var(--good-soft); color: var(--good); } .chip.warn { background: var(--warn-soft); color: var(--warn); } .chip.bad { background: var(--bad-soft); color: var(--bad); }
@@ -171,6 +172,68 @@ table.pivot thead tr:last-child th.n { text-align: right; }
 .chat-opts { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 13px; }
 .chat-opts label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
 
+.msgs > * { min-width: 0; }
+.msg { overflow-wrap: anywhere; }
+.pv-toggle { display: none; }
+
+/* Αφή: μεγαλύτερα σημεία πατήματος */
+@media (pointer: coarse) {
+  .dchip button { padding: 4px 8px; }
+  .fchip .x { padding: 4px 8px; }
+  .qbtn { padding: 6px 12px; }
+  .fpanel label { padding: 6px 4px; }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  main { padding: 16px 14px 32px; }
+  .pv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Κινητό */
+@media (max-width: 640px) {
+  body { padding-bottom: calc(62px + env(safe-area-inset-bottom)); font-size: 14.5px; }
+  .bar { padding: 8px 12px; gap: 8px; }
+  .brand { font-size: 15px; }
+  .brand .mark { width: 26px; height: 26px; font-size: 13px; }
+  .tenant { font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who { margin-left: 0; }
+  #userEmail { display: none; }
+  #logoutBtn { padding: 6px 10px; font-size: 13px; }
+  nav.tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; max-width: none; padding: 0 0 env(safe-area-inset-bottom);
+    background: var(--surface); border-top: 1px solid var(--line); gap: 0; overflow: visible;
+  }
+  nav.tabs a { flex: 1; text-align: center; padding: 12px 2px 13px; font-size: 13px; border-bottom: 0; border-top: 3px solid transparent; }
+  nav.tabs a[aria-current="page"] { border-top-color: var(--accent); }
+  main { padding: 12px 10px 20px; gap: 12px; }
+  .card { padding: 12px 13px; border-radius: 10px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .kpi .value { font-size: 20px; }
+  .kpi .label, .kpi .delta { font-size: 12px; }
+  .insights { grid-template-columns: 1fr; }
+  .chart-box { height: 230px; }
+  .grid2 { gap: 12px; }
+  /* Pivot */
+  .pv-toggle { display: inline-flex; }
+  .pv-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #pivot .card.closed .pv-body { display: none; }
+  .pv-grid { grid-template-columns: 1fr; gap: 12px; }
+  .pv-actions .btn { flex: 1 1 auto; padding: 8px 10px; font-size: 13.5px; }
+  .pv-actions input { flex-basis: 100%; }
+  .pv-wrap { max-height: 65vh; }
+  table.pivot { font-size: 12.5px; }
+  table.pivot td, table.pivot th { padding: 6px 6px; }
+  /* Βοηθός */
+  .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .chips button { white-space: nowrap; flex: none; }
+  .msg { max-width: 100%; }
+  .msgs { max-height: none; }
+  .mode { font-size: 11px; }
+  .chat-form .btn { padding: 9px 12px; }
+  .report .btn { flex: 1; }
+}
+
 /* Reports */
 .reports { display: grid; gap: 10px; }
 .report { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -206,7 +269,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     </div>
     <nav class="tabs" aria-label="Ενότητες">
       <a href="#overview" data-view="overview">Επισκόπηση</a>
-      <a href="#pivot" data-view="pivot">Ανάλυση (pivot)</a>
+      <a href="#pivot" data-view="pivot">Ανάλυση</a>
       <a href="#reports" data-view="reports">Αναφορές</a>
       <a href="#assistant" data-view="assistant">Βοηθός</a>
     </nav>
@@ -251,7 +314,11 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
   <!-- Pivot -->
   <main id="pivot" hidden>
     <section class="card">
-      <h2 id="pvTitle">Ανάλυση πωλήσεων</h2>
+      <div class="pv-head">
+        <h2 id="pvTitle">Ανάλυση πωλήσεων</h2>
+        <button type="button" class="btn ghost pv-toggle" id="pvToggle" aria-expanded="true">Απόκρυψη ρυθμίσεων</button>
+      </div>
+      <div class="pv-body">
       <div class="pv-grid">
         <div class="pv-block">
           <span class="lbl">Γραμμές (με τη σειρά ομαδοποίησης)</span>
@@ -286,6 +353,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
         <button class="btn ghost" id="pvExpand" type="button">Άνοιγμα όλων</button>
         <button class="btn ghost" id="pvCollapse" type="button">Κλείσιμο όλων</button>
         <span class="sub" id="pvMsg" role="status"></span>
+      </div>
       </div>
     </section>
     <div class="pv-wrap"><table class="pivot" id="pvTable"></table></div>
@@ -578,6 +646,11 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     $("pvMeasure").addEventListener("change", () => { pv.measure = $("pvMeasure").value; renderPivot(); });
     $("pvFrom").addEventListener("change", () => { pv.from = $("pvFrom").value; if (pv.to < pv.from) pv.to = pv.from; syncControls(); renderPivot(); });
     $("pvTo").addEventListener("change", () => { pv.to = $("pvTo").value; if (pv.from > pv.to) pv.from = pv.to; syncControls(); renderPivot(); });
+    $("pvToggle").addEventListener("click", () => {
+      const card = $("pvToggle").closest(".card"), closed = card.classList.toggle("closed");
+      $("pvToggle").textContent = closed ? "Ρυθμίσεις ανάλυσης" : "Απόκρυψη ρυθμίσεων";
+      $("pvToggle").setAttribute("aria-expanded", String(!closed));
+    });
     $("pvSave").addEventListener("click", saveReport);
     $("pvCsv").addEventListener("click", exportCsv);
     $("pvExpand").addEventListener("click", () => { collapsed.clear(); renderPivot(); });
@@ -710,6 +783,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16
     syncControls();
     $("pvTitle").textContent = name || "Ανάλυση πωλήσεων";
     $("pvName").value = "";
+    if (window.innerWidth <= 640) { const card = $("pvToggle").closest(".card"); card.classList.add("closed"); $("pvToggle").textContent = "Ρυθμίσεις ανάλυσης"; $("pvToggle").setAttribute("aria-expanded", "false"); }
   }
 
   // ---- Υπολογισμός ----
